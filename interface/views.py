@@ -3,12 +3,31 @@ from django.http import HttpResponse
 
 
 # Create your views here.
-def index(request):
-    # Для HTML-шаблонов
+def header(request):
     return render(request, 'interface/header/header.html')
 
 
-def about(request):
-    # Для небольшой HTML-строки
-    return HttpResponse("<h4>О нас</h4")
+def blocks(request):
+    return render(request, 'interface/blocks.html')
+
+
+def tables(request):
+    return render(request, 'interface/tables.html')
+
+
+def analisys(request):
+    return render(request, 'interface/analisys.html')
+
+
+def events(request):
+    return render(request, 'interface/events.html')
+
+
+def new_block(request):
+    return render(request, 'interface/new_block.html')
+
+
+def reports(request):
+    return render(request, 'interface/reports.html')
+
 
