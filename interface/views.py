@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from .models import Sections, Sub_sections
 
 
 # Create your views here.
@@ -8,7 +8,8 @@ def header(request):
 
 
 def blocks(request):
-    return render(request, 'interface/blocks.html')
+    sections = Sections.objects.all()
+    return render(request, 'interface/blocks.html', {'tittle': 'Состав объектов', 'sections': sections})
 
 
 def tables(request):

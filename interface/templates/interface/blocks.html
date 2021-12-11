@@ -9,7 +9,11 @@
     <div class="container">
         <div class="row">
             <div class="col text-center">
-                <h4>Разделы системы</h4>
+                {% for el in sections %}
+                    {% if el.include == 1 %}
+                        <h1>{{ el.interface_name }}</h1>
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
     </div>
