@@ -1,3 +1,4 @@
+from django.http import HttpRequest
 from django.shortcuts import render
 from .models import Sections, Sub_sections
 
@@ -9,7 +10,11 @@ def header(request):
 
 def blocks(request):
     sections = Sections.objects.all()
-    return render(request, 'interface/blocks.html', {'tittle': 'Состав объектов', 'sections': sections})
+    return render(request, 'interface/blocks.html',
+                  {
+                      'sections': sections
+                  }
+                  )
 
 
 def tables(request):
@@ -30,5 +35,21 @@ def new_block(request):
 
 def reports(request):
     return render(request, 'interface/reports.html')
+
+
+def table_list(request):
+    subsections = Sub_sections.objects.all()
+    sections = Sections.objects.all()
+    url = request.GET['block']
+    return render(request, 'interface/table_list.html',
+                  {
+                      'sub': subsections,
+                      'seс': sections,
+                      'url': int(url),
+                      'url1': url
+                  }
+                  )
+
+
 
 

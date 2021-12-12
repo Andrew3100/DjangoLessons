@@ -1,0 +1,35 @@
+{% extends 'interface/header/header.html' %}
+
+{% block tittle %}
+    Таблицы
+{% endblock %}
+
+{% block crumbs %}
+    <br>
+    {% for r in seс %}
+        {% if r.id == url %}
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb"><li class="breadcrumb-item"><a href="#">Главная</a></li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{ r.interface_name }}
+                </li>
+            </ol>
+        </nav>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
+
+{% block main_content %}
+    <br>
+    <ul class="list-group">
+        {% for s in sub %}
+            {% if s.section_id == url1 %}
+                <li class="list-group-item list-group-item-primary" style="width: 600px;"><a href="#" style="text-decoration: none; color: black">{{ s.interface_name }}</a></li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+
+

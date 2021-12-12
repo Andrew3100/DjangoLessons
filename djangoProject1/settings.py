@@ -33,14 +33,14 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
-    'django.contrib.sites',
+    # 'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'interface',
-    'allauth'
-    'allauth.account'
+    # 'allauth'
+    # 'allauth.account'
 ]
 
 MIDDLEWARE = [
@@ -89,10 +89,10 @@ DATABASES = {
 }
 
 
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-)
+# AUTHENTICATION_BACKENDS = (
+#     'django.contrib.auth.backends.ModelBackend',
+#     'allauth.account.auth_backends.AuthenticationBackend',
+# )
 
 
 # Password validation
@@ -125,7 +125,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-SITE_ID = 1
+# SITE_ID = 1
 
 
 # Static files (CSS, JavaScript, Images)

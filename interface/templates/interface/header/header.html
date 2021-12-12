@@ -28,17 +28,22 @@
     </div>
   </header>
   <br>
+{#    <div class="container">#}
   <div class="nav-scroller py-1 mb-2">
-    <nav class="nav d-flex justify-content-between">
-      <a class="p-2 link-secondary" href="/blocks">Блоки</a>
-      <a class="p-2 link-secondary" href="/tables">Таблицы</a>
-      <a class="p-2 link-secondary" href="/analisys">Статистика</a>
-      <a class="p-2 link-secondary" href="/events">События</a>
-      <a class="p-2 link-secondary" href="/new_block">Создать блок</a>
-      <a class="p-2 link-secondary" href="/reports">Отчёты</a>
+    <nav class="nav justify-content-between">
+      <a class="p-2 link-secondary text-center" href="/blocks">Главная</a>
+{#      <a class="p-2 link-secondary" href="/tables">Таблицы</a>#}
+      <a class="p-2 link-secondary text-center" href="/analisys">Статистика</a>
+      <a class="p-2 link-secondary text-center" href="/events">События</a>
+{#      <a class="p-2 link-secondary" href="/new_block">Создать блок</a>#}
+      <a class="p-2 link-secondary text-center" href="/reports">Отчёты</a>
     </nav>
   </div>
+{#    </div>#}
 
+        {% block crumbs %}
+
+        {% endblock %}
 
         {% block main_content %}
 

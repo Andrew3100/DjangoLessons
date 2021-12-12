@@ -4,18 +4,25 @@
     Блоки
 {% endblock %}
 
+{% block crumbs %}
+
+{% endblock %}
+
 {% block main_content %}
     <br>
     <div class="container">
         <div class="row">
-            <div class="col text-center">
-                {% for el in sections %}
-                    {% if el.include == 1 %}
-                        <h1>{{ el.interface_name }}</h1>
-                    {% endif %}
-                {% endfor %}
+            <div class="col text-left">
+                <ul class="list-group">
+                    {% for el in sections %}
+                        {% if el.include == 1 %}
+                            <li class="list-group-item list-group-item-primary"
+                                style="width: 600px;"><a href="/table?block={{ el.id }}" style="text-decoration: none; color: black">{{ el.interface_name }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>
 {% endblock %}
-
