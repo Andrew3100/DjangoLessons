@@ -1,6 +1,45 @@
 from django.http import HttpRequest
 from django.shortcuts import render
-from .models import Sections, Sub_sections
+from .models import *
+
+
+def get_model_name(string):
+    if string == 'TableAus':
+        return TableAus
+    if string == 'TableCultDoc':
+        return TableCultDoc
+    if string == 'TableCultEvent':
+        return TableCultEvent
+    if string == 'TableEcDocument':
+        return TableEcDocument
+    if string == 'TableEcEvents':
+        return TableEcEvents
+    if string == 'TableGrants':
+        return TableGrants
+    if string == 'TableGuberDocLinks':
+        return TableGuberDocLinks
+    if string == 'TableGuberInternational':
+        return TableGuberInternational
+    if string == 'TableInternational':
+        return TableInternational
+    if string == 'TableInternationalDocument':
+        return TableInternationalDocument
+    if string == 'TableMobile':
+        return TableMobile
+    if string == 'TableOch':
+        return TableOch
+    if string == 'TableSportDoc':
+        return TableSportDoc
+    if string == 'TableSportInter':
+        return TableSportInter
+    if string == 'TableStudentChange':
+        return TableStudentChange
+    if string == 'TableWork':
+        return TableWork
+    if string == 'TableYoung':
+        return TableYoung
+    if string == 'TableZaoch':
+        return TableZaoch
 
 
 # Create your views here.
@@ -15,10 +54,6 @@ def blocks(request):
                       'sections': sections
                   }
                   )
-
-
-def tables(request):
-    return render(request, 'interface/tables.html')
 
 
 def analisys(request):
@@ -51,5 +86,25 @@ def table_list(request):
                   )
 
 
+def table_view(request):
+    # Достаём имя раздела по идентификатору, указанному в GET параметре
+    section = Sections.objects.filter(id=request.GET['section'])
+    # Имя подраздела по тому же принципу
+    sub_section = Sub_sections.objects.filter(id=request.GET['sub_section'])
+    for sub_s in sub_section:
+        sub_name = sub_s.param_name.split(sep='_')
+        # Узнаём имя класса, через которое надо обратиться к модели
+        class_name = ''
+        for i in range(0,len(sub_name)):
+            class_name = class_name + sub_name[i].title()
+    # Достаём данные по структуре таблицы
+    table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
+    # Запрос к базе данных
+    table_data = get_model_name(class_name).objects.all()
 
-
+    return render(request, 'interface/table_view.html', {
+        'section': section,
+        'sub_section': sub_section,
+        'table_structure': table_structure,
+        'table_data': table_data
+    })

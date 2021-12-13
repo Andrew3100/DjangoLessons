@@ -81,10 +81,10 @@ WSGI_APPLICATION = 'djangoProject1.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sql_lessons',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
+        'NAME': 'django',
+        'USER': 'dev',
+        'PASSWORD': '123456',
+        'HOST': '172.32.2.12',
     }
 }
 

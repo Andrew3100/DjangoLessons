@@ -1,0 +1,33 @@
+{% extends 'interface/header/header.html' %}
+
+{% block tittle %}
+    Главный интерфейс
+{% endblock %}
+
+{% block crumbs %}
+    <br>
+    <nav aria-label="breadcrumb">
+            <ol class="breadcrumb"><li class="breadcrumb-item"><a href="#">Главная</a>
+                {% comment %}<li class="breadcrumb-item active" aria-current="page">{% endcomment %}<a href="/table?block={{ r.id }}">{{ r.interface_name }}</a></li>
+                {% for s in section %}
+                    <li class="breadcrumb-item active" aria-current="page"><a href="/table?block={{ r.id }}">{{ s.interface_name }}</a></li>
+                {% endfor %}
+                {% for ss in sub_section %}
+                    <li class="breadcrumb-item active" aria-current="page"><a href="/table?block={{ r.id }}">{{ ss.interface_name }}</a></li>
+                {% endfor %}
+            </ol>
+    </nav>
+{% endblock %}
+
+{% block main_content %}
+    <table class="table table-dark">
+    <td>
+    {% for structure in table_structure %}
+        <td>{{ structure.html_descriptor }}</td>
+    {% endfor %}
+    </tr>
+{#    {% for t in table_data %}#}
+{#        {{ t.id }}#}
+{#    {% endfor %}#}
+    </table>
+{% endblock %}

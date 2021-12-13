@@ -11,7 +11,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb"><li class="breadcrumb-item"><a href="#">Главная</a></li>
                 <li class="breadcrumb-item active" aria-current="page">
-                    {{ r.interface_name }}
+                    <a href="/table?block={{ r.id }}">{{ r.interface_name }}</a>
                 </li>
             </ol>
         </nav>
@@ -25,7 +25,7 @@
     <ul class="list-group">
         {% for s in sub %}
             {% if s.section_id == url1 %}
-                <li class="list-group-item list-group-item-primary" style="width: 600px;"><a href="#" style="text-decoration: none; color: black">{{ s.interface_name }}</a></li>
+                <li class="list-group-item list-group-item-primary" style="width: 600px;"><a href="/table_view?section={{ url }}&sub_section={{ s.id }}" style="text-decoration: none; color: black">{{ s.interface_name }}</a></li>
             {% endif %}
         {% endfor %}
     </ul>
