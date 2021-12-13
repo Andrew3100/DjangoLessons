@@ -95,16 +95,25 @@ def table_view(request):
         sub_name = sub_s.param_name.split(sep='_')
         # Узнаём имя класса, через которое надо обратиться к модели
         class_name = ''
-        for i in range(0,len(sub_name)):
+        for i in range(0, len(sub_name)):
             class_name = class_name + sub_name[i].title()
     # Достаём данные по структуре таблицы
     table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
+    fields = []
+    for t_s in table_structure:
+        fields.append(t_s.sql_field_name)
     # Запрос к базе данных
-    table_data = get_model_name(class_name).objects.all()
+    table_data = get_model_name(class_name).objects.filter(is_delete=0)
+
+
+    # НЕОБХОДИМО ПОЛУЧИТЬ ДВУМЕРНЫЙ МАССИВ ИЗ БАЗЫ ДАННЫХ
+
+
 
     return render(request, 'interface/table_view.html', {
         'section': section,
         'sub_section': sub_section,
         'table_structure': table_structure,
-        'table_data': table_data
+        # 'table_data': table_data,
+        'data': full_row,
     })

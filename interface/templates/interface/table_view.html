@@ -20,7 +20,10 @@
 {% endblock %}
 
 {% block main_content %}
-    <table class="table table-dark">
+    {{ data }}
+    {% comment %}<br>
+    <br>
+    <table class="table table-bordered table-dark text-center">
     <tr>
     {% for structure in table_structure %}
         <td>{{ structure.html_descriptor }}</td>
@@ -28,10 +31,10 @@
     </tr>
     {% for t in table_data %}
         <tr>
-        {% for structure1 in table_structure %}
-            <td>{{ structure1.sql_field_name }}</td>
+        {% for r in struct %}
+            <td>{{ t.r }}</td>
         {% endfor %}
         </tr>
     {% endfor %}
-    </table>
+    </table>{% endcomment %}
 {% endblock %}
