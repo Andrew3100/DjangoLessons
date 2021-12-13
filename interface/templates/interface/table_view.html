@@ -21,13 +21,17 @@
 
 {% block main_content %}
     <table class="table table-dark">
-    <td>
+    <tr>
     {% for structure in table_structure %}
         <td>{{ structure.html_descriptor }}</td>
     {% endfor %}
     </tr>
-{#    {% for t in table_data %}#}
-{#        {{ t.id }}#}
-{#    {% endfor %}#}
+    {% for t in table_data %}
+        <tr>
+        {% for structure1 in table_structure %}
+            <td>{{ structure1.sql_field_name }}</td>
+        {% endfor %}
+        </tr>
+    {% endfor %}
     </table>
 {% endblock %}
