@@ -22,12 +22,18 @@
 {% block main_content %}
     {{ file_info }}
     <div class="container">
-        <div class="col" style="display: flex">
-            <form enctype="multipart/form-data" action="/table_view?section={{ section_id }}&sub_section={{ sub_section_id }}" method="POST" class="form-row" style="width: 120px;">
-                {% csrf_token %}
-                <input name="excel" class="form-control" type="file">
-                <button type="submit" class="btn btn-warning" style="">Импортировать</button>
-            </form>
+        <div class="col-12" style="display: flex">
+            <div class="bg-info" style="border-radius: 10px;">
+                <div style="margin: 10px 10px 10px 10px;">
+                <h5>При помощи этой формы можно сделать массовый импорт записей в таблицу</h5>
+                    <form enctype="multipart/form-data" action="/table_view?section={{ section_id }}&sub_section={{ sub_section_id }}" method="POST" class="form-row" style="width: 120px;">
+                        {#        Токен для проверки формы - требования джанго        #}
+                        {% csrf_token %}
+                        <input style="float: left" name="excel" class="form-control" type="file">
+                        <button type="submit" class="btn btn-warning" style="margin-top: 6px;">Импортировать</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     <br>
