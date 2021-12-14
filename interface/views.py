@@ -1,8 +1,25 @@
 from django.http import HttpRequest
 from django.shortcuts import render
 from .models import *
+import pandas as pd
+import numpy as np
 
 
+
+
+
+# Функция формирует имя экземпляра класса (если не понятно, читаем документацию по моделям Django)
+def get_class_name_by_section_subsection(sub_section):
+    for sub_s in sub_section:
+        sub_name = sub_s.param_name.split(sep='_')
+        # Узнаём имя класса, через которое надо обратиться к модели
+        class_name = ''
+        for i in range(0, len(sub_name)):
+            class_name = class_name + sub_name[i].title()
+    return class_name
+
+
+# Функция создаёт экземпляр по строковому имени класса
 def get_model_name(string):
     if string == 'TableAus':
         return TableAus
@@ -41,6 +58,22 @@ def get_model_name(string):
     if string == 'TableZaoch':
         return TableZaoch
 
+
+# Функция формирует двумерный массив данных (не включая служебные поля)
+def get_table_data(table_structure, table_data):
+    # Главный массив данных
+    full_data = []
+    for table_data1 in table_data:
+        # Подчинённый массив данных
+        data = []
+        # Перебираем структуру таблицы и пытаемся сунуть элементы в свойства объекта.
+        # Благодаря этому можно не делать милиарды лишних шаблоно
+        for table_structure1 in table_structure:
+            # Костыль, позволяющий передать совйство объекта в видк строки
+            data.append(table_data1.__getattribute__(table_structure1.sql_field_name))
+        full_data.append(data)
+        del data
+    return full_data
 
 # Create your views here.
 def header(request):
@@ -85,35 +118,44 @@ def table_list(request):
                   }
                   )
 
-
 def table_view(request):
+    if request.FILES:
+        # Тут будет кусок кода, который обрабатывает Excel
+        # Этапы - сохранить файл, прочитать пандасом, кинуть в базу
+        ms = ''
     # Достаём имя раздела по идентификатору, указанному в GET параметре
     section = Sections.objects.filter(id=request.GET['section'])
+
+    for s_section in section:
+        section_id = s_section.id
+
     # Имя подраздела по тому же принципу
     sub_section = Sub_sections.objects.filter(id=request.GET['sub_section'])
-    for sub_s in sub_section:
-        sub_name = sub_s.param_name.split(sep='_')
-        # Узнаём имя класса, через которое надо обратиться к модели
-        class_name = ''
-        for i in range(0, len(sub_name)):
-            class_name = class_name + sub_name[i].title()
+
+    for s_sub_section in sub_section:
+        sub_section_id = s_sub_section.id
+
     # Достаём данные по структуре таблицы
     table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
-    fields = []
-    for t_s in table_structure:
-        fields.append(t_s.sql_field_name)
+    class_name = get_class_name_by_section_subsection(sub_section)
+
     # Запрос к базе данных
     table_data = get_model_name(class_name).objects.filter(is_delete=0)
 
-
-    # НЕОБХОДИМО ПОЛУЧИТЬ ДВУМЕРНЫЙ МАССИВ ИЗ БАЗЫ ДАННЫХ
-
-
+    # Обращаемся к функции получения данных и получаем в ответ двумерный массив
+    data = get_table_data(table_structure, table_data)
 
     return render(request, 'interface/table_view.html', {
+        # Раздел
         'section': section,
+        'section_id': section_id,
+        # Подраздел
         'sub_section': sub_section,
+        'sub_section_id': sub_section_id,
+        # Заголовки таблицы
         'table_structure': table_structure,
-        # 'table_data': table_data,
-        'data': full_row,
+        # Двумерный массив содержимого
+        'data': data,
+        # 'ms': ''
+        'file_info': request.FILES
     })

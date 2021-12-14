@@ -237,8 +237,8 @@ class TableOch(models.Model):
     mean_education = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     graduate_students = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     first_course = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    except_field = models.TextField(db_column='except', db_collation='utf8_general_ci', blank=True, null=True)  # Field renamed because it was a Python reserved word.
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    excepted = models.TextField(db_column='excepted', db_collation='utf8_general_ci', blank=True, null=True)  # Field renamed because it was a Python reserved word.
+    year_load = models.TextField(db_column='year_load', db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -345,8 +345,8 @@ class TableZaoch(models.Model):
     mean_education = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     graduate_students = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     first_course = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    except_field = models.TextField(db_column='except', db_collation='utf8_general_ci', blank=True, null=True)  # Field renamed because it was a Python reserved word.
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    excepted = models.TextField(db_column='excepted', db_collation='utf8_general_ci', blank=True, null=True)  # Field renamed because it was a Python reserved word.
+    year_load = models.TextField(db_column='year_load', db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
