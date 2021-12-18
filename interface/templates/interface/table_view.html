@@ -1,38 +1,83 @@
 {% extends 'interface/header/header.html' %}
-
 {% block tittle %}
     Главный интерфейс
 {% endblock %}
 
 {% block crumbs %}
     <br>
-    <nav aria-label="breadcrumb">
-            <ol class="breadcrumb"><li class="breadcrumb-item"><a href="#">Главная</a>
-                {% comment %}<li class="breadcrumb-item active" aria-current="page">{% endcomment %}<a href="/table?block={{ r.id }}">{{ r.interface_name }}</a></li>
-                {% for s in section %}
-                    <li class="breadcrumb-item active" aria-current="page"><a href="/table?block={{ r.id }}">{{ s.interface_name }}</a></li>
-                {% endfor %}
-                {% for ss in sub_section %}
-                    <li class="breadcrumb-item active" aria-current="page"><a href="/table?block={{ r.id }}">{{ ss.interface_name }}</a></li>
-                {% endfor %}
-            </ol>
-    </nav>
+    <div class="container">
+        <nav aria-label="breadcrumb">
+                <ol class="breadcrumb"><li class="breadcrumb-item"><a href="#">Главная</a>
+                    {% comment %}<li class="breadcrumb-item active" aria-current="page">{% endcomment %}<a href="/table?block={{ r.id }}">{{ r.interface_name }}</a></li>
+                    {% for s in section %}
+                        <li class="breadcrumb-item active" aria-current="page"><a href="/table?block={{ r.id }}">{{ s.interface_name }}</a></li>
+                    {% endfor %}
+                    {% for ss in sub_section %}
+                        <li class="breadcrumb-item active" aria-current="page"><a href="/table?block={{ r.id }}">{{ ss.interface_name }}</a></li>
+                    {% endfor %}
+                </ol>
+        </nav>
+    </div>
 {% endblock %}
 
 {% block main_content %}
-    {{ file_info }}
+    <br>
     <div class="container">
-        <div class="col-12" style="display: flex">
-            <div class="bg-info" style="border-radius: 10px;">
-                <div style="margin: 10px 10px 10px 10px;">
-                <h5>При помощи этой формы можно сделать массовый импорт записей в таблицу</h5>
-                    <form enctype="multipart/form-data" action="/table_view?section={{ section_id }}&sub_section={{ sub_section_id }}" method="POST" class="form-row" style="width: 120px;">
-                        {#        Токен для проверки формы - требования джанго        #}
-                        {% csrf_token %}
-                        <input style="float: left" name="excel" class="form-control" type="file">
-                        <button type="submit" class="btn btn-warning" style="margin-top: 6px;">Импортировать</button>
-                    </form>
+        <div class="row">
+            <div class="col-3" style="display: flex">
+                <div class="bg-light" style="border-radius: 10px;">
+                    <div style="margin: 10px 10px 10px 10px;">
+                    <h5>Импорт записей в таблицу:</h5>
+                        <form enctype="multipart/form-data" action="/table_view?section={{ section_id }}&sub_section={{ sub_section_id }}" method="POST" class="form-row" style="width: 120px;">
+                            {#        Токен для проверки формы - требования джанго        #}
+                            {% csrf_token %}
+                            <input style="float: left" name="excel" class="form-control" type="file">
+                            <button type="submit" class="btn btn-outline-warning" style="margin-top: 6px;">Импортировать</button>
+                            <a></a>
+                        </form>
+                    </div>
                 </div>
+            </div>
+            <div class="col-9">
+                {% block modal %}
+
+        <!-- Кнопка модального окна -->
+        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            <span style="color: black;">Добавить запись</span>
+        </button>
+
+        <!-- Модальное окно -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Форма добавления записи</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+              </div>
+              <div class="modal-body">
+                  {{ form }}
+{#                  <form method="POST" action="/add?section={{ section_id }}&sub_section={{ sub_section_id }}">#}
+                      {#         Формируем форму в соответствии со структурой таблицы         #}
+{#                      {% csrf_token %}#}
+{#                      {% for i in table_structure %}#}
+{#                          {% comment %} Отбрасываем вывод полей года и автора {% endcomment %}#}
+{#                          {% if i.html_descriptor != "Год" and i.html_descriptor != "Автор" %}#}
+{#                              {% comment %} Метка {% endcomment %}#}
+{#                            <label for="{{ i.sql_field_name }}">{{ i.html_descriptor }}</label>#}
+{#                            <input type="{{ i.html_form_data_type }}" class="form-control" name="{{ i.sql_field_name }}" id="{{ i.sql_field_name }}" style="margin-top: 7px;">#}
+{#                            <br>#}
+{#                          {% endif %}#}
+{#                      {% endfor %}#}
+{#              </div>#}
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="submit" class="btn btn-outline-warning">Сохранить изменения</button>
+              </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endblock %}
             </div>
         </div>
     </div>

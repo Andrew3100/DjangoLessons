@@ -1,9 +1,8 @@
 from django.http import HttpRequest
 from django.shortcuts import render
+from django import forms
 from .models import *
-import pandas as pd
-import numpy as np
-
+from .forms import Form
 
 
 
@@ -59,7 +58,7 @@ def get_model_name(string):
         return TableZaoch
 
 
-# Функция формирует двумерный массив данных (не включая служебные поля)
+# Функция формирует двумерный массив данных
 def get_table_data(table_structure, table_data):
     # Главный массив данных
     full_data = []
@@ -74,6 +73,7 @@ def get_table_data(table_structure, table_data):
         full_data.append(data)
         del data
     return full_data
+
 
 # Create your views here.
 def header(request):
@@ -118,6 +118,32 @@ def table_list(request):
                   }
                   )
 
+
+def add(request):
+    # section = Sections.objects.filter(id=request.GET['section'])
+    # sub_section = Sub_sections.objects.filter(id=request.GET['sub_section'])
+    #
+    #
+    # table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
+    # posts_names = []
+    # for table_structure1 in table_structure:
+    #     # Исключаем служебные поля из форм, так как они не заполняются
+    #     if table_structure1.sql_field_name != 'year_load' and table_structure1.sql_field_name != 'author':
+    #         # Массив данных из формы
+    #         posts_names.append(request.POST[table_structure1.sql_field_name])
+    # # Формируем имя создаваемого экземпляра
+    # class_name = get_class_name_by_section_subsection(sub_section)
+    #
+    # save = get_model_name(class_name)(country=posts_names[0], is_delete=0).save()
+
+    return render(request, 'interface/add.html',
+                  {
+                      'post_data': class_name,
+                      'form': 'form'
+                  }
+                  )
+
+
 def table_view(request):
     if request.FILES:
         # Тут будет кусок кода, который обрабатывает Excel
@@ -125,25 +151,23 @@ def table_view(request):
         ms = ''
     # Достаём имя раздела по идентификатору, указанному в GET параметре
     section = Sections.objects.filter(id=request.GET['section'])
-
     for s_section in section:
         section_id = s_section.id
-
     # Имя подраздела по тому же принципу
     sub_section = Sub_sections.objects.filter(id=request.GET['sub_section'])
-
     for s_sub_section in sub_section:
         sub_section_id = s_sub_section.id
-
     # Достаём данные по структуре таблицы
     table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
     class_name = get_class_name_by_section_subsection(sub_section)
-
     # Запрос к базе данных
     table_data = get_model_name(class_name).objects.filter(is_delete=0)
-
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
     data = get_table_data(table_structure, table_data)
+
+
+    # Форма добавления данных
+    form = Form()
 
     return render(request, 'interface/table_view.html', {
         # Раздел
@@ -156,6 +180,6 @@ def table_view(request):
         'table_structure': table_structure,
         # Двумерный массив содержимого
         'data': data,
-        # 'ms': ''
-        'file_info': request.FILES
+        'form': form
+        # 'file_info': file
     })

@@ -47,7 +47,7 @@ class Subsections_data(models.Model):
 class TableAus(models.Model):
     country = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     student_count = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -65,7 +65,7 @@ class TableCultDoc(models.Model):
     timestamp_agree_stop = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     agree_subject = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     status = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -84,7 +84,7 @@ class TableCultEvent(models.Model):
     event_location = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     results = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     status = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -102,7 +102,7 @@ class TableEcDocument(models.Model):
     timestamp_event_stop = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     participant_count = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     event_location = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -122,7 +122,7 @@ class TableEcEvents(models.Model):
     event_location = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     results = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     status = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -139,7 +139,7 @@ class TableGrants(models.Model):
     country = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     timestamp_grant_start = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     timestamp_grant_stop = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -157,7 +157,7 @@ class TableGuberDocLinks(models.Model):
     timestamp_agree_start = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     timestamp_agree_stop = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     agree_location = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -172,7 +172,7 @@ class TableGuberInternational(models.Model):
     subject_name = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     siders_guber_agree = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     registr_minust = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -189,7 +189,7 @@ class TableInternational(models.Model):
     timestamp_event_stop = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     participant_count = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     results = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -206,7 +206,7 @@ class TableInternationalDocument(models.Model):
     timestamp_agree_start = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     timestamp_agree_stop = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     agree_subject = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -220,7 +220,7 @@ class TableInternationalDocument(models.Model):
 class TableMobile(models.Model):
     country = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     mobile_name = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -256,7 +256,7 @@ class TableSportDoc(models.Model):
     timestamp_agree_stop = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     agree_subject = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     status = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -276,7 +276,7 @@ class TableSportInter(models.Model):
     event_location = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     results = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     status = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -292,7 +292,7 @@ class TableStudentChange(models.Model):
     partner = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     timestamp_practice_start = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     timestamp_practice_stop = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -308,7 +308,7 @@ class TableWork(models.Model):
     citizenship = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     field_of_activity = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     employee_count = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
@@ -328,7 +328,7 @@ class TableYoung(models.Model):
     event_location = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     results = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     status = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
-    year = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
+    year_load = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     author = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
     is_delete = models.TextField(db_collation='utf8_general_ci', blank=True, null=True)
 
