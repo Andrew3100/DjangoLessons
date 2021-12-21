@@ -131,6 +131,9 @@ def add(request):
         if table_structure1.sql_field_name != 'year_load' and table_structure1.sql_field_name != 'author':
             # Собираем посты и запаковываем их в словарь
             posts_names_dict[table_structure1.sql_field_name] = request.POST[table_structure1.sql_field_name]
+    posts_names_dict['year_load'] = 2020;
+    posts_names_dict['author'] = 'Funikov';
+    posts_names_dict['is_delete'] = 0;
     # Формируем имя создаваемого экземпляра
     class_name = get_class_name_by_section_subsection(sub_section)
     # Аргумент с двумя звёздочками - распаковка словаря обрабатываесых данных
@@ -166,10 +169,7 @@ def table_view(request):
     table_data = get_model_name(class_name).objects.filter(is_delete=0)
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
     data = get_table_data(table_structure, table_data)
-    r = requests.get('http://github.com/', allow_redirects=False)
-    r.status_code  # 302
-    r.url  # http://github.com, not https.
-    r.headers['Location']  # https://github.com/ -- the redirect destination
+
     return render(request, 'interface/table_view.html', {
         # Раздел
         'section': section,

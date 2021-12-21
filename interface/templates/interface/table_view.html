@@ -42,9 +42,17 @@
                 {% block modal %}
 
         <!-- Кнопка модального окна -->
-        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
-            <span style="color: black;">Добавить запись</span>
-        </button>
+
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <span style="color: black;">Добавить запись</span>
+            </button>
+                    <br>
+                    <br>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <span style="color: black;">Показать всю таблицу</span>
+            </button>
+                    <br><p style="margin-top: 5px; color: red">(Не рекомендуется!)</p>
+
 
         <!-- Модальное окно -->
         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -83,12 +91,27 @@
     </div>
     <br>
     <br>
+
     <div class="container">
     <table class="table table-bordered table-dark text-center">
-    <tr>
+    <form method="POST">
+    <div class="row">
+        <div class="col text-center">
+            <button class="btn btn-outline-warning text-center">Сохранить в Excel</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <p>Уберите отдельные поля в заголовке таблицы, если их не нужно включать в отчёт. Система сформирует отчёт, включив те записи, которы есть в этой таблице</p>
+        </div>
+    </div>
     {% for structure in table_structure %}
-        <td>{{ structure.html_descriptor }}</td>
+        <td>
+        {{ structure.html_descriptor }}
+        <input type="checkbox" class="checkbox-inline" checked>
+        </td>
     {% endfor %}
+    </form>
     </tr>
     {% for data1 in data %}
         <tr>
