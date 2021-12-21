@@ -2,8 +2,7 @@ from django.http import HttpRequest
 from django.shortcuts import render
 from django import forms
 from .models import *
-from .forms import Form
-
+# from .forms import *
 
 
 
@@ -120,26 +119,29 @@ def table_list(request):
 
 
 def add(request):
-    # section = Sections.objects.filter(id=request.GET['section'])
-    # sub_section = Sub_sections.objects.filter(id=request.GET['sub_section'])
-    #
-    #
-    # table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
-    # posts_names = []
-    # for table_structure1 in table_structure:
-    #     # Исключаем служебные поля из форм, так как они не заполняются
-    #     if table_structure1.sql_field_name != 'year_load' and table_structure1.sql_field_name != 'author':
-    #         # Массив данных из формы
-    #         posts_names.append(request.POST[table_structure1.sql_field_name])
-    # # Формируем имя создаваемого экземпляра
-    # class_name = get_class_name_by_section_subsection(sub_section)
-    #
-    # save = get_model_name(class_name)(country=posts_names[0], is_delete=0).save()
+    section = Sections.objects.filter(id=request.GET['section'])
+    sub_section = Sub_sections.objects.filter(id=request.GET['sub_section'])
+
+
+    table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
+    posts_names = []
+    posts_names_dict = {}
+    for table_structure1 in table_structure:
+        # Исключаем служебные поля из форм, так как они не заполняются
+        if table_structure1.sql_field_name != 'year_load' and table_structure1.sql_field_name != 'author':
+            # Собираем посты и запаковываем их в словарь
+            posts_names_dict[table_structure1.sql_field_name] = request.POST[table_structure1.sql_field_name]
+    # Формируем имя создаваемого экземпляра
+    class_name = get_class_name_by_section_subsection(sub_section)
+    # Аргумент с двумя звёздочками - распаковка словаря обрабатываесых данных
+    # За счёт него можно передавать сколько угодно значений, а не фиксированное количество
+    save = get_model_name(class_name)(**posts_names_dict).save()
+
 
     return render(request, 'interface/add.html',
                   {
                       'post_data': class_name,
-                      'form': 'form'
+                      'form': posts_names_dict['country']
                   }
                   )
 
@@ -164,11 +166,10 @@ def table_view(request):
     table_data = get_model_name(class_name).objects.filter(is_delete=0)
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
     data = get_table_data(table_structure, table_data)
-
-
-    # Форма добавления данных
-    form = Form()
-
+    r = requests.get('http://github.com/', allow_redirects=False)
+    r.status_code  # 302
+    r.url  # http://github.com, not https.
+    r.headers['Location']  # https://github.com/ -- the redirect destination
     return render(request, 'interface/table_view.html', {
         # Раздел
         'section': section,
@@ -180,6 +181,6 @@ def table_view(request):
         'table_structure': table_structure,
         # Двумерный массив содержимого
         'data': data,
-        'form': form
+        # 'form': form
         # 'file_info': file
     })

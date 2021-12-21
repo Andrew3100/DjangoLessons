@@ -56,19 +56,19 @@
               </div>
               <div class="modal-body">
                   {{ form }}
-{#                  <form method="POST" action="/add?section={{ section_id }}&sub_section={{ sub_section_id }}">#}
-                      {#         Формируем форму в соответствии со структурой таблицы         #}
-{#                      {% csrf_token %}#}
-{#                      {% for i in table_structure %}#}
-{#                          {% comment %} Отбрасываем вывод полей года и автора {% endcomment %}#}
-{#                          {% if i.html_descriptor != "Год" and i.html_descriptor != "Автор" %}#}
-{#                              {% comment %} Метка {% endcomment %}#}
-{#                            <label for="{{ i.sql_field_name }}">{{ i.html_descriptor }}</label>#}
-{#                            <input type="{{ i.html_form_data_type }}" class="form-control" name="{{ i.sql_field_name }}" id="{{ i.sql_field_name }}" style="margin-top: 7px;">#}
-{#                            <br>#}
-{#                          {% endif %}#}
-{#                      {% endfor %}#}
-{#              </div>#}
+                  <form method="POST" action="/add?section={{ section_id }}&sub_section={{ sub_section_id }}">
+                               {% comment %}Формируем форму в соответствии со структурой таблицы{% endcomment %}
+                      {% csrf_token %}
+                      {% for i in table_structure %}
+                          {% comment %} Отбрасываем вывод полей года и автора {% endcomment %}
+                          {% if i.html_descriptor != "Год" and i.html_descriptor != "Автор" %}
+                              {% comment %} Метка {% endcomment %}
+                            <label for="{{ i.sql_field_name }}">{{ i.html_descriptor }}</label>
+                            <input type="{{ i.html_form_data_type }}" class="form-control" name="{{ i.sql_field_name }}" id="{{ i.sql_field_name }}" style="margin-top: 7px;">
+                            <br>
+                          {% endif %}
+                      {% endfor %}
+              </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
                 <button type="submit" class="btn btn-outline-warning">Сохранить изменения</button>
