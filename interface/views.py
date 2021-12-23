@@ -1,10 +1,11 @@
 from django.http import HttpRequest
+
 from django.shortcuts import render
 from django import forms
 from .models import *
 # from .forms import *
-
-
+import requests
+import pandas as pd
 
 # Функция формирует имя экземпляра класса (если не понятно, читаем документацию по моделям Django)
 def get_class_name_by_section_subsection(sub_section):
@@ -121,8 +122,6 @@ def table_list(request):
 def add(request):
     section = Sections.objects.filter(id=request.GET['section'])
     sub_section = Sub_sections.objects.filter(id=request.GET['sub_section'])
-
-
     table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
     posts_names = []
     posts_names_dict = {}
@@ -139,22 +138,27 @@ def add(request):
     # Аргумент с двумя звёздочками - распаковка словаря обрабатываесых данных
     # За счёт него можно передавать сколько угодно значений, а не фиксированное количество
     save = get_model_name(class_name)(**posts_names_dict).save()
+    # Текст урл для редиректа
+    new_url = '/table_view?section=' + str(request.GET['section']) + '&sub_section=' + str(request.GET['sub_section'])
 
-
-    return render(request, 'interface/add.html',
-                  {
-                      'post_data': class_name,
-                      'form': posts_names_dict['country']
-                  }
-                  )
+    return render(request, 'interface/add.html', {
+        'url': new_url
+    })
 
 
 def table_view(request):
-    if request.FILES:
+    # if request.FILES:
         # Тут будет кусок кода, который обрабатывает Excel
         # Этапы - сохранить файл, прочитать пандасом, кинуть в базу
-        ms = ''
+        # ms = ''
     # Достаём имя раздела по идентификатору, указанному в GET параметре
+
+
+
+    excel_DF = data = {'Name': ['Tom', 'Joseph', 'Krish', 'John'], 'Age': [20, 21, 19, 18]}
+    DF = pd.DataFrame(excel_DF)
+    DF.to_excel("C:/Users/Andre/PycharmProjects/DjangoLessons/interface/reports/output.xlsx")
+
     section = Sections.objects.filter(id=request.GET['section'])
     for s_section in section:
         section_id = s_section.id

@@ -65,7 +65,6 @@
               <div class="modal-body">
                   {{ form }}
                   <form method="POST" action="/add?section={{ section_id }}&sub_section={{ sub_section_id }}">
-                               {% comment %}Формируем форму в соответствии со структурой таблицы{% endcomment %}
                       {% csrf_token %}
                       {% for i in table_structure %}
                           {% comment %} Отбрасываем вывод полей года и автора {% endcomment %}
@@ -102,13 +101,13 @@
     </div>
     <div class="row">
         <div class="col text-center">
-            <p>Уберите отдельные поля в заголовке таблицы, если их не нужно включать в отчёт. Система сформирует отчёт, включив те записи, которы есть в этой таблице</p>
+            <p>Уберите отдельные поля в заголовке таблицы, если их не нужно включать в отчёт. Система сформирует отчёт, включив те записи, которые есть в этой таблице</p>
         </div>
     </div>
     {% for structure in table_structure %}
         <td>
-        {{ structure.html_descriptor }}
-        <input type="checkbox" class="checkbox-inline" checked>
+            <label class="form-label" for="{{ structure.sql_field_name }}">{{ structure.html_descriptor }}</label>
+        <input id="{{ structure.sql_field_name }}" type="checkbox" name="{{ structure.sql_field_name }}_check_for_excel" class="checkbox-inline" value="{{ structure.html_descriptor }}" checked>
         </td>
     {% endfor %}
     </form>
@@ -122,5 +121,5 @@
     {% endfor %}
     </table>
     </div>
-    <h1>{{ ms }}</h1>
+
 {% endblock %}
