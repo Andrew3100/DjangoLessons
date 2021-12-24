@@ -6,6 +6,7 @@ from .models import *
 # from .forms import *
 import requests
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Функция формирует имя экземпляра класса (если не понятно, читаем документацию по моделям Django)
 def get_class_name_by_section_subsection(sub_section):
@@ -147,18 +148,14 @@ def add(request):
 
 
 def table_view(request):
-    # if request.FILES:
-        # Тут будет кусок кода, который обрабатывает Excel
-        # Этапы - сохранить файл, прочитать пандасом, кинуть в базу
-        # ms = ''
+    if request.FILES:
+        log = upload_file(request)
+        return render(request, 'interface/import_results.html', {
+            'ms': log
+        })
     # Достаём имя раздела по идентификатору, указанному в GET параметре
-
-
-
-    excel_DF = data = {'Name': ['Tom', 'Joseph', 'Krish', 'John'], 'Age': [20, 21, 19, 18]}
-    DF = pd.DataFrame(excel_DF)
-    DF.to_excel("C:/Users/Andre/PycharmProjects/DjangoLessons/interface/reports/output.xlsx")
-
+    section_id = request.GET['section']
+    sub_section_id = request.GET['sub_section']
     section = Sections.objects.filter(id=request.GET['section'])
     for s_section in section:
         section_id = s_section.id
@@ -188,3 +185,33 @@ def table_view(request):
         # 'form': form
         # 'file_info': file
     })
+
+
+def upload_file(request):
+        file = pd.read_excel(request.FILES['excel'])
+        # Тут хранится файл
+        # file = pd.DataFrame(file)
+        # Массив заголовков
+        file_headers = list(file.columns.values)
+
+        section_id = request.GET['section']
+        sub_section_id = request.GET['sub_section']
+        # Структура обрабатываемой таблицы
+        datas = Subsections_data.objects.filter(section_id=section_id, subsection_id=sub_section_id)
+        # Собираем заголовки для нужной таблицы из базы.
+        database_headers = []
+
+        for data in datas:
+            if data.html_descriptor != 'Автор' and data.html_descriptor != 'Год':
+                database_headers.append(data.html_descriptor)
+
+        # Если заголовки базы не совпадают с теми, которые загрузил юзер - загружен неверный файл
+        if file_headers != database_headers:
+            log_message = 'Для данной таблицы выгруженный файл не подходит. Повторите попытку импорта'
+            return log_message
+
+        lens = []
+        # Перебор файла. Чек страны на правильность написания
+        for i in range(0, len(file)):
+            lens.append(file['Страна прибытия'][i])
+        return lens
