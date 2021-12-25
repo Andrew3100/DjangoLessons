@@ -31,8 +31,8 @@
                         <form enctype="multipart/form-data" action="/table_view?section={{ section_id }}&sub_section={{ sub_section_id }}" method="POST" class="form-row" style="width: 120px;">
                             {#        Токен для проверки формы - требования джанго        #}
                             {% csrf_token %}
-                            <input style="float: left" name="excel" class="form-control" type="file">
-                            <button type="submit" class="btn btn-outline-warning" style="margin-top: 6px;">Импортировать</button>
+                            <input style="float: left" name="excel" class="form-control" type="file" required>
+                            <button type="submit" class="btn btn-outline-warning" style="margin-top: 6px;"><span style="color: black">Импортировать</span></button>
                             <a></a>
                         </form>
                     </div>
@@ -96,7 +96,7 @@
     <form method="POST">
     <div class="row">
         <div class="col text-center">
-            <button class="btn btn-outline-warning text-center">Сохранить в Excel</button>
+            <button class="btn btn-outline-warning text-center"><span style="color: black">Сохранить в Excel</span></button>
         </div>
     </div>
     <div class="row">

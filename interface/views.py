@@ -148,11 +148,7 @@ def add(request):
 
 
 def table_view(request):
-    if request.FILES:
-        log = upload_file(request)
-        return render(request, 'interface/import_results.html', {
-            'ms': log
-        })
+
     # Достаём имя раздела по идентификатору, указанному в GET параметре
     section_id = request.GET['section']
     sub_section_id = request.GET['sub_section']
@@ -163,6 +159,13 @@ def table_view(request):
     sub_section = Sub_sections.objects.filter(id=request.GET['sub_section'])
     for s_sub_section in sub_section:
         sub_section_id = s_sub_section.id
+    if request.FILES:
+        log = upload_file(request, sub_section)
+        new_url = '/table_view?section=' + str(request.GET['section']) + '&sub_section=' + str(request.GET['sub_section'])
+        return render(request, 'interface/import_results.html', {
+            'url': new_url,
+            'ms': log
+        })
     # Достаём данные по структуре таблицы
     table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
     class_name = get_class_name_by_section_subsection(sub_section)
@@ -187,7 +190,7 @@ def table_view(request):
     })
 
 
-def upload_file(request):
+def upload_file(request, sub_section):
         file = pd.read_excel(request.FILES['excel'])
         # Тут хранится файл
         # file = pd.DataFrame(file)
@@ -210,8 +213,43 @@ def upload_file(request):
             log_message = 'Для данной таблицы выгруженный файл не подходит. Повторите попытку импорта'
             return log_message
 
-        lens = []
-        # Перебор файла. Чек страны на правильность написания
-        for i in range(0, len(file)):
-            lens.append(file['Страна прибытия'][i])
-        return lens
+        lens = GetCountriesList(request)
+
+        # Массив словарей для записи
+        array_dicts = []
+        for i in range(0,len(file)):
+            if 'Страна прибытия' in database_headers:
+                country = file['Страна прибытия'][i]
+                if country not in list(lens.keys()):
+                    log = 'В строке ' + str(i + 2) + ' найдена ошибка в наименовании страны. Исправьте её и повторите импорт снова.'
+                    return log
+            # Словарь для записи
+            dict_save = {}
+            for data in datas:
+                if data.html_descriptor != 'Автор' and data.html_descriptor != 'Год':
+                    dict_save[data.sql_field_name] = file[data.html_descriptor][i]
+            dict_save['year_load'] = 2020
+            dict_save['author'] = 'Andre'
+            dict_save['is_delete'] = 0
+            array_dicts.append(dict_save)
+
+        model = get_model_name(get_class_name_by_section_subsection(sub_section))
+
+        # Перебор созданного словаря
+        for dict in array_dicts:
+            # Вставка словаря при помощи распаковки словаря аргументов **kwargs. Документация
+            model(**dict).save()
+        log = "Импорт записей произведён успешно"
+        return log
+
+
+def GetCountriesList(request):
+    countries = RefCountry.objects.all()
+    list = []
+    Dict = {}
+    for countr in countries:
+        Dict[countr.name] = countr.id
+        fn = countr.fullname
+        if fn != '':
+            Dict[countr.fullname] = countr.id
+    return Dict

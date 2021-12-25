@@ -355,3 +355,11 @@ class TableZaoch(models.Model):
         db_table = 'table_zaoch'
         verbose_name = 'Заочная форма обучения'
         verbose_name_plural = 'Заочная форма обучения'
+
+class RefCountry(models.Model):
+    name = models.CharField(max_length=64, blank=True, null=True)
+    fullname = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'ref_country'
