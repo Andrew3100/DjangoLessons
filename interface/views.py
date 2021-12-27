@@ -1,10 +1,12 @@
 from django.http import HttpRequest
+from django.http import HttpResponse
 
 from django.shortcuts import render
 from django import forms
 from .models import *
 # from .forms import *
 import requests
+import xlwt
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -17,6 +19,9 @@ def get_class_name_by_section_subsection(sub_section):
         for i in range(0, len(sub_name)):
             class_name = class_name + sub_name[i].title()
     return class_name
+
+
+
 
 
 # Функция создаёт экземпляр по строковому имени класса

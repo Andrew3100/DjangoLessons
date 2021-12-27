@@ -21,6 +21,7 @@
 {% endblock %}
 
 {% block main_content %}
+
     <br>
     <div class="container">
         <div class="row">
@@ -38,11 +39,13 @@
                     </div>
                 </div>
             </div>
+
+
+
+
             <div class="col-9">
                 {% block modal %}
-
-        <!-- Кнопка модального окна -->
-
+            <!-- Кнопка модального окна -->
             <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 <span style="color: black;">Добавить запись</span>
             </button>
@@ -52,40 +55,44 @@
                 <span style="color: black;">Показать всю таблицу</span>
             </button>
                     <br><p style="margin-top: 5px; color: red">(Не рекомендуется!)</p>
-
-
-        <!-- Модальное окно -->
-        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Форма добавления записи</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-              </div>
-              <div class="modal-body">
-                  {{ form }}
-                  <form method="POST" action="/add?section={{ section_id }}&sub_section={{ sub_section_id }}">
-                      {% csrf_token %}
-                      {% for i in table_structure %}
-                          {% comment %} Отбрасываем вывод полей года и автора {% endcomment %}
-                          {% if i.html_descriptor != "Год" and i.html_descriptor != "Автор" %}
-                              {% comment %} Метка {% endcomment %}
-                            <label for="{{ i.sql_field_name }}">{{ i.html_descriptor }}</label>
-                            <input type="{{ i.html_form_data_type }}" class="form-control" name="{{ i.sql_field_name }}" id="{{ i.sql_field_name }}" style="margin-top: 7px;">
-                            <br>
-                          {% endif %}
-                      {% endfor %}
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                <button type="submit" class="btn btn-outline-warning">Сохранить изменения</button>
-              </form>
+            <!-- Модальное окно -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Форма добавления записи</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                  </div>
+                  <div class="modal-body">
+                      {{ form }}
+                      <form method="POST" action="/add?section={{ section_id }}&sub_section={{ sub_section_id }}">
+                          {% csrf_token %}
+                          {% for i in table_structure %}
+                              {% comment %} Отбрасываем вывод полей года и автора {% endcomment %}
+                              {% if i.html_descriptor != "Год" and i.html_descriptor != "Автор" %}
+                                  {% comment %} Метка {% endcomment %}
+                                <label for="{{ i.sql_field_name }}">{{ i.html_descriptor }}</label>
+                                <input type="{{ i.html_form_data_type }}" class="form-control" name="{{ i.sql_field_name }}" id="{{ i.sql_field_name }}" style="margin-top: 7px;">
+                                <br>
+                              {% endif %}
+                          {% endfor %}
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-outline-warning">Сохранить изменения</button>
+                  </form>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        {% endblock %}
             </div>
+            {% endblock %}
+
+
+
+
+
+
         </div>
     </div>
     <br>
@@ -104,9 +111,21 @@
             <p>Уберите отдельные поля в заголовке таблицы, если их не нужно включать в отчёт. Система сформирует отчёт, включив те записи, которые есть в этой таблице</p>
         </div>
     </div>
+
+    <div class="row">
+        <div class="col text-center">
+            <select style='width: 600px; margin: auto' class='form-select' name='sel' onchange='document.location=this.options[this.selectedIndex].value'>
+                <option>Данные 1</option>
+                <option value="/table_view?section=1&sub_section=7&data=sex">Данные 10</option>
+            </select>
+        </div>
+    </div>
+
+    <br>
+    <br>
     {% for structure in table_structure %}
         <td>
-            <label class="form-label" for="{{ structure.sql_field_name }}">{{ structure.html_descriptor }}</label>
+        <label class="form-label" for="{{ structure.sql_field_name }}">{{ structure.html_descriptor }}</label>
         <input id="{{ structure.sql_field_name }}" type="checkbox" name="{{ structure.sql_field_name }}_check_for_excel" class="checkbox-inline" value="{{ structure.html_descriptor }}" checked>
         </td>
     {% endfor %}
