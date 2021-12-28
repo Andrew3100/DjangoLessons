@@ -154,16 +154,25 @@ def add(request):
 
 def table_view(request):
 
+    l = list(request.GET)
+    dict = {}
+    for i in range(0,len(l)):
+        if l[i] != 'section' and l[i] != 'sub_section':
+            dict[l[i]] = request.GET[l[i]]
+
     # Достаём имя раздела по идентификатору, указанному в GET параметре
     section_id = request.GET['section']
     sub_section_id = request.GET['sub_section']
     section = Sections.objects.filter(id=request.GET['section'])
+
     for s_section in section:
         section_id = s_section.id
     # Имя подраздела по тому же принципу
     sub_section = Sub_sections.objects.filter(id=request.GET['sub_section'])
+
     for s_sub_section in sub_section:
         sub_section_id = s_sub_section.id
+
     if request.FILES:
         log = upload_file(request, sub_section)
         new_url = '/table_view?section=' + str(request.GET['section']) + '&sub_section=' + str(request.GET['sub_section'])
@@ -171,15 +180,19 @@ def table_view(request):
             'url': new_url,
             'ms': log
         })
+
     # Достаём данные по структуре таблицы
     table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
     class_name = get_class_name_by_section_subsection(sub_section)
     # Запрос к базе данных
-    table_data = get_model_name(class_name).objects.filter(is_delete=0)
+    table_data = get_model_name(class_name).objects.filter(first_course__range=(10,100))
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
     data = get_table_data(table_structure, table_data)
 
     return render(request, 'interface/table_view.html', {
+
+        'l': dict,
+
         # Раздел
         'section': section,
         'section_id': section_id,

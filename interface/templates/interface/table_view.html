@@ -21,7 +21,12 @@
 {% endblock %}
 
 {% block main_content %}
-
+{{ l }}
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
     <br>
     <div class="container">
         <div class="row">
@@ -112,11 +117,13 @@
         </div>
     </div>
 
+        {% comment %} Селекторы {% endcomment %}
     <div class="row">
         <div class="col text-center">
-            <select style='width: 600px; margin: auto' class='form-select' name='sel' onchange='document.location=this.options[this.selectedIndex].value'>
+            <label class="form-label" for="selector">
+            <select style='width: 600px; margin: auto' class='form-select' id='selector' onchange='document.location=this.options[this.selectedIndex].value'>
                 <option>Данные 1</option>
-                <option value="/table_view?section=1&sub_section=7&data=sex">Данные 10</option>
+                <option value="/table_view?section=1&sub_section=1&country=Россия">Россия</option>
             </select>
         </div>
     </div>
