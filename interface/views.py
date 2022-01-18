@@ -6,9 +6,23 @@ from django import forms
 from .models import *
 # from .forms import *
 import requests
-import xlwt
+
 import pandas as pd
 import matplotlib.pyplot as plt
+
+
+# Функция достаёт данные по фильтрам таблицы
+def get_filters_data(class_name, section, subsection):
+    filters_data = Subsections_data.objects.filter(section_id = section, subsection_id = subsection)
+    dict = {}
+    for f_d in filters_data:
+        dict[f_d.sql_field_name] = f_d.filter_type
+    return dict
+
+
+
+
+
 
 # Функция формирует имя экземпляра класса (если не понятно, читаем документацию по моделям Django)
 def get_class_name_by_section_subsection(sub_section):
@@ -19,9 +33,6 @@ def get_class_name_by_section_subsection(sub_section):
         for i in range(0, len(sub_name)):
             class_name = class_name + sub_name[i].title()
     return class_name
-
-
-
 
 
 # Функция создаёт экземпляр по строковому имени класса
@@ -184,15 +195,49 @@ def table_view(request):
     # Достаём данные по структуре таблицы
     table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
     class_name = get_class_name_by_section_subsection(sub_section)
+
+    # Достаём данные по фильтрам таблицы
+    # переменная filters это словарь где ключ - поле БД, которое фильтруется, а значение - тип фильтра.
+    # Типы фильтров:
+    # если пусто - фильтра нет
+    # count - фильтр по количественным данным
+    # date -  фильтр по дате
+    # field - фильтр по полю БД
+    filters = get_filters_data(get_model_name(class_name), section_id,sub_section_id)
+
+    filters_types = list(filters.values())
+    filters_fields = list(filters.keys())
+    counts_f = []
+    fields_f = []
+    dates_f = []
+
+    for i in range(0, len(filters_types)):
+        if filters_types[i] == 'count':
+          counts_f.append(filters_fields[i])
+        if filters_types[i] == 'date':
+          dates_f.append(filters_fields[i])
+        if filters_types[i] == 'field':
+          fields_f.append(filters_fields[i])
+
+
+
+
+
+
+
+
     # Запрос к базе данных
-    table_data = get_model_name(class_name).objects.filter(first_course__range=(10,100))
+    table_data = get_model_name(class_name).objects.filter(**dict)
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
     data = get_table_data(table_structure, table_data)
 
     return render(request, 'interface/table_view.html', {
 
         'l': dict,
-
+        'm': counts_f,
+        'd': fields_f,
+        'k': dates_f,
+        'filter': filters,
         # Раздел
         'section': section,
         'section_id': section_id,
@@ -211,10 +256,8 @@ def table_view(request):
 def upload_file(request, sub_section):
         file = pd.read_excel(request.FILES['excel'])
         # Тут хранится файл
-        # file = pd.DataFrame(file)
         # Массив заголовков
         file_headers = list(file.columns.values)
-
         section_id = request.GET['section']
         sub_section_id = request.GET['sub_section']
         # Структура обрабатываемой таблицы
@@ -226,7 +269,7 @@ def upload_file(request, sub_section):
             if data.html_descriptor != 'Автор' and data.html_descriptor != 'Год':
                 database_headers.append(data.html_descriptor)
 
-        # Если заголовки базы не совпадают с теми, которые загрузил юзер - загружен неверный файл
+        # Если заголовки базы не совпадают с теми, которые загрузил юзер - заг ружен неверный файл
         if file_headers != database_headers:
             log_message = 'Для данной таблицы выгруженный файл не подходит. Повторите попытку импорта'
             return log_message
@@ -239,7 +282,7 @@ def upload_file(request, sub_section):
             if 'Страна прибытия' in database_headers:
                 country = file['Страна прибытия'][i]
                 if country not in list(lens.keys()):
-                    log = 'В строке ' + str(i + 2) + ' найдена ошибка в наименовании страны. Исправьте её и повторите импорт снова.'
+                    log = 'В строке ' + str(i + 2) + 'файла Excel найдена ошибка в наименовании страны. Исправьте её и повторите импорт снова.'
                     return log
             # Словарь для записи
             dict_save = {}

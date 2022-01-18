@@ -36,6 +36,7 @@ class Subsections_data(models.Model):
     html_descriptor = models.TextField('Метка HTML-формы для ввода записи', max_length=1000)
     sql_field_name = models.TextField('Имя поля таблицы БД', max_length=1000)
     required = models.TextField('Обязательность заполнения', max_length=1000)
+    filter_type = models.TextField('Тип фильтра', max_length=1000)
 
     def __str__(self):
         return self.html_form_data_type
