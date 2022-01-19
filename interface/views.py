@@ -20,8 +20,20 @@ def get_filters_data(class_name, section, subsection):
     return dict
 
 
-
-
+# Функция создаёт фильтры по полям. Аргумент - массив полей. Возврат - словарь с ключом "описание фильтра", а значением массив данных по полю
+def get_field_filters(model, array, request):
+    arr1 = {}
+    for i in range(0, len(array)):
+        label = Subsections_data.objects.filter(section_id = request.GET['section'], subsection_id = request.GET['sub_section'], sql_field_name = array[i])
+        # Имя метки:
+        for l in label:
+            label = l.html_descriptor
+        datas = model.objects.filter(is_delete=0)
+        arr = []
+        for data in datas:
+            arr.append(data.__getattribute__(array[i]))
+        arr1[label] = (list(set(arr)))
+    return arr1
 
 
 # Функция формирует имя экземпляра класса (если не понятно, читаем документацию по моделям Django)
@@ -136,6 +148,23 @@ def table_list(request):
                   )
 
 
+def get_a_set_of_filters(filters):
+    filters_types = list(filters.values())
+    filters_fields = list(filters.keys())
+    counts_f = []
+    fields_f = []
+    dates_f = []
+
+    for i in range(0, len(filters_types)):
+        if filters_types[i] == 'count':
+            counts_f.append(filters_fields[i])
+        if filters_types[i] == 'date':
+            dates_f.append(filters_fields[i])
+        if filters_types[i] == 'field':
+            fields_f.append(filters_fields[i])
+    return fields_f, counts_f, dates_f
+
+
 def add(request):
     section = Sections.objects.filter(id=request.GET['section'])
     sub_section = Sub_sections.objects.filter(id=request.GET['sub_section'])
@@ -204,25 +233,12 @@ def table_view(request):
     # date -  фильтр по дате
     # field - фильтр по полю БД
     filters = get_filters_data(get_model_name(class_name), section_id,sub_section_id)
-
-    filters_types = list(filters.values())
-    filters_fields = list(filters.keys())
-    counts_f = []
-    fields_f = []
-    dates_f = []
-
-    for i in range(0, len(filters_types)):
-        if filters_types[i] == 'count':
-          counts_f.append(filters_fields[i])
-        if filters_types[i] == 'date':
-          dates_f.append(filters_fields[i])
-        if filters_types[i] == 'field':
-          fields_f.append(filters_fields[i])
-
-
-
-
-
+    # 0 - поля
+    # 1 - кол-во (диапазон)
+    # 2 - кол-во (даты)
+    # передаём эти элементы в методы получения фильтров
+    filters = get_a_set_of_filters(filters)
+    f = get_field_filters(get_model_name(class_name),filters[0], request)
 
 
 
@@ -233,11 +249,11 @@ def table_view(request):
 
     return render(request, 'interface/table_view.html', {
 
-        'l': dict,
-        'm': counts_f,
-        'd': fields_f,
-        'k': dates_f,
-        'filter': filters,
+        # 'l': filters,
+        # 'm': counts_f,
+        # 'd': fields_f,
+        # 'k': dates_f,
+        'filter': f,
         # Раздел
         'section': section,
         'section_id': section_id,
