@@ -1,3 +1,4 @@
+
 {% extends 'interface/header/header.html' %}
 {% block tittle %}
     Главный интерфейс
@@ -21,12 +22,11 @@
 {% endblock %}
 
 {% block main_content %}
-{#    <pre>{{ filter }}</pre>#}
-    <pre>{{ filter }}</pre>
-    <br>
-    <br>
-    <br>
-    <br>
+    {% comment %} Первый массив - метки, второй - данные фильтров {% endcomment %}
+{#    <pre>{{ filter_fields_labels }}</pre>#}
+{#    <pre>{{ filter_fields_datas }}</pre>#}
+
+
     <br>
     <br>
     <div class="container">
@@ -45,7 +45,6 @@
                     </div>
                 </div>
             </div>
-
 
 
 
@@ -94,11 +93,6 @@
             </div>
             {% endblock %}
 
-
-
-
-
-
         </div>
     </div>
     <br>
@@ -117,17 +111,23 @@
             <p>Уберите отдельные поля в заголовке таблицы, если их не нужно включать в отчёт. Система сформирует отчёт, включив те записи, которые есть в этой таблице</p>
         </div>
     </div>
-
+        {{ filter_fields_labels }}
+    <br>
+        {{ filter_fields_datas }}
         {% comment %} Селекторы {% endcomment %}
-    <div class="row">
-        <div class="col text-center">
-            <label class="form-label" for="selector">
-            <select style='width: 600px; margin: auto' class='form-select' id='selector' onchange='document.location=this.options[this.selectedIndex].value'>
-                <option>Данные 1</option>
-                <option value="/table_view?section=1&sub_section=1&country=Россия">Россия</option>
-            </select>
-        </div>
-    </div>
+
+        {% for i in indexes  %}
+            <div class="row">
+                <div class="col text-center">
+                    <label class="form-label" for="selector">{{ filters_by_fields_labels }}</label>
+                    <select style='width: 600px; margin: auto' class='form-select' id='selector' onchange='document.location=this.options[this.selectedIndex].value'>
+                        {% for fil1 in filter_fields_datas.1 %}
+                            <option value="/table_view?section=1&sub_section=1&country={{ fil1 }}">{{ fil1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        {% endfor %}
 
     <br>
     <br>

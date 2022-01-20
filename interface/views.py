@@ -238,8 +238,16 @@ def table_view(request):
     # 2 - кол-во (даты)
     # передаём эти элементы в методы получения фильтров
     filters = get_a_set_of_filters(filters)
-    f = get_field_filters(get_model_name(class_name),filters[0], request)
+    filters_by_fields = get_field_filters(get_model_name(class_name),filters[0], request)
+    filters_by_fields_labels = list(filters_by_fields.keys())
+    filters_by_fields_datas = list(filters_by_fields.values())
 
+
+
+
+    indexes = []
+    for i in range(0, len(filters_by_fields_datas)):
+        indexes.append(int(i))
 
 
     # Запрос к базе данных
@@ -247,16 +255,18 @@ def table_view(request):
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
     data = get_table_data(table_structure, table_data)
 
+
+
     return render(request, 'interface/table_view.html', {
 
-        # 'l': filters,
-        # 'm': counts_f,
-        # 'd': fields_f,
-        # 'k': dates_f,
-        'filter': f,
+
+        'filter_fields_labels': filters_by_fields_labels,
+        'filter_fields_datas': filters_by_fields_datas,
         # Раздел
         'section': section,
         'section_id': section_id,
+
+        'indexes': indexes,
         # Подраздел
         'sub_section': sub_section,
         'sub_section_id': sub_section_id,
