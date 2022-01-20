@@ -9,7 +9,23 @@ import requests
 
 import pandas as pd
 import matplotlib.pyplot as plt
+from django.urls import resolve
 
+# Удаляет дубликаты гет-параметров
+# def clear_url(url):
+#     array = url.split('&')
+#     cleared = array[0]
+#     del array[0]
+#     array = array
+#     dict = {}
+#     for i in array:
+#         arr = i.split('=')
+#         dict[arr[0]] = arr[1]
+#     gets = list(dict.keys())
+#     vals = list(dict.values())
+#     for i in range(0, len(vals)):
+#         cleared = cleared + '&' + str(gets[i]) + '=' + str(vals[i])
+#     return cleared
 
 # Функция достаёт данные по фильтрам таблицы
 def get_filters_data(class_name, section, subsection):
@@ -22,17 +38,26 @@ def get_filters_data(class_name, section, subsection):
 
 # Функция создаёт фильтры по полям. Аргумент - массив полей. Возврат - словарь с ключом "описание фильтра", а значением массив данных по полю
 def get_field_filters(model, array, request):
-    arr1 = {}
+    arr1 = []
     for i in range(0, len(array)):
         label = Subsections_data.objects.filter(section_id = request.GET['section'], subsection_id = request.GET['sub_section'], sql_field_name = array[i])
+        arr = []
         # Имя метки:
         for l in label:
-            label = l.html_descriptor
+            arr.append(l.html_descriptor)
+            arr.append(l.sql_field_name)
+
+            # if (request.args.get(l.sql_field_name)):
+            #     arr.append(request.GET[l.sql_field_name])
+            # else:
+            #     arr.append('Все значения')
+
         datas = model.objects.filter(is_delete=0)
-        arr = []
         for data in datas:
-            arr.append(data.__getattribute__(array[i]))
-        arr1[label] = (list(set(arr)))
+            if data.__getattribute__(array[i]) not in arr:
+                arr.append(data.__getattribute__(array[i]))
+
+        arr1.append((list((arr))))
     return arr1
 
 
@@ -223,6 +248,10 @@ def table_view(request):
 
     # Достаём данные по структуре таблицы
     table_structure = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'])
+    off_words = []
+    for t in table_structure:
+        off_words.append(t.sql_field_name)
+        off_words.append(t.html_descriptor)
     class_name = get_class_name_by_section_subsection(sub_section)
 
     # Достаём данные по фильтрам таблицы
@@ -239,34 +268,28 @@ def table_view(request):
     # передаём эти элементы в методы получения фильтров
     filters = get_a_set_of_filters(filters)
     filters_by_fields = get_field_filters(get_model_name(class_name),filters[0], request)
-    filters_by_fields_labels = list(filters_by_fields.keys())
-    filters_by_fields_datas = list(filters_by_fields.values())
+    filters_by_fields_labels = filters_by_fields
 
-
-
-
-    indexes = []
-    for i in range(0, len(filters_by_fields_datas)):
-        indexes.append(int(i))
-
-
+    current_url = (request.get_full_path_info())
     # Запрос к базе данных
     table_data = get_model_name(class_name).objects.filter(**dict)
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
     data = get_table_data(table_structure, table_data)
 
 
-
     return render(request, 'interface/table_view.html', {
 
 
         'filter_fields_labels': filters_by_fields_labels,
-        'filter_fields_datas': filters_by_fields_datas,
+        'off_words': off_words,
+
+        # 'filter_fields_datas': filters_by_fields_datas,
         # Раздел
         'section': section,
         'section_id': section_id,
+        'url': current_url,
 
-        'indexes': indexes,
+        # 'indexes': indexes,
         # Подраздел
         'sub_section': sub_section,
         'sub_section_id': sub_section_id,

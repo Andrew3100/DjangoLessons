@@ -22,8 +22,9 @@
 {% endblock %}
 
 {% block main_content %}
+
     {% comment %} Первый массив - метки, второй - данные фильтров {% endcomment %}
-{#    <pre>{{ filter_fields_labels }}</pre>#}
+    <pre>{{ filter_fields_labels }}</pre>
 {#    <pre>{{ filter_fields_datas }}</pre>#}
 
 
@@ -111,23 +112,26 @@
             <p>Уберите отдельные поля в заголовке таблицы, если их не нужно включать в отчёт. Система сформирует отчёт, включив те записи, которые есть в этой таблице</p>
         </div>
     </div>
-        {{ filter_fields_labels }}
-    <br>
-        {{ filter_fields_datas }}
-        {% comment %} Селекторы {% endcomment %}
 
-        {% for i in indexes  %}
+    <br>
+
+
+
+    {% for i in filter_fields_labels %}
             <div class="row">
                 <div class="col text-center">
-                    <label class="form-label" for="selector">{{ filters_by_fields_labels }}</label>
+                    <label class="form-label" for="selector">{{ i.0 }}</label>
                     <select style='width: 600px; margin: auto' class='form-select' id='selector' onchange='document.location=this.options[this.selectedIndex].value'>
-                        {% for fil1 in filter_fields_datas.1 %}
-                            <option value="/table_view?section=1&sub_section=1&country={{ fil1 }}">{{ fil1 }}</option>
+                        <option>{{ i.2 }}</option>
+                        {% for g in i %}
+                            {% if g not in off_words %}
+                            <option value="{{ url }}&{{ i.1 }}={{ g }}">{{ g }}</option>
+                            {% endif %}
                         {% endfor %}
                     </select>
                 </div>
             </div>
-        {% endfor %}
+    {% endfor %}
 
     <br>
     <br>
