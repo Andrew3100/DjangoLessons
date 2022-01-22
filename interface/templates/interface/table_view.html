@@ -23,11 +23,6 @@
 
 {% block main_content %}
 
-    {% comment %} Первый массив - метки, второй - данные фильтров {% endcomment %}
-    <pre>{{ filter_fields_labels }}</pre>
-{#    <pre>{{ filter_fields_datas }}</pre>#}
-
-
     <br>
     <br>
     <div class="container">
@@ -115,7 +110,7 @@
 
     <br>
 
-    {{ parse }}
+
 
     {% for i in filter_fields_labels %}
             <div class="row">
@@ -132,22 +127,35 @@
                 </div>
             </div>
     {% endfor %}
-
-    {% for i in filter_fields_labels %}
+        <a class="btn btn-warning" href="table_view?section=1&sub_section=1">Сбросить фильтры</a>
+{#    {{ filters_by_counts_datas }}#}
+    {{ dict }}
+    <br>
+    <br>
+    {{ filters_by_counts_datas }}
+    {% for counts in filters_by_counts_datas %}
             <div class="row">
                 <div class="col text-center">
-                    <label class="form-label" for="selector">Количественные данные</label>
+                    <label class="form-label" for="selector">{{ counts.0 }}</label>
                     <div class="row">
                         <div class="col-6 text-right">
                             <select style='width: 100px; margin-left: 85%;' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>
-                                <option value="{{ url }}">1</option>
-                                <option value="{{ url }}">2</option>
+                                <option>{{ counts.3 }}</option>
+                                {% for c in counts %}
+                                    {% if c not in off_words %}
+                                        <option value="{{ url }}&{{ counts.1 }}___rangestart={{ c }}">{{ c }}</option>
+                                    {% endif %}
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-6">
                             <select style='width: 100px;' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>
-                                <option value="{{ url }}">1</option>
-                                <option value="{{ url }}">2</option>
+                                <option>{{ counts.4 }}</option>
+                                {% for c in counts %}
+                                    {% if c not in off_words %}
+                                        <option value="{{ url }}&{{ counts.1 }}___rangeend={{ c }}">{{ c }}</option>
+                                    {% endif %}
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
