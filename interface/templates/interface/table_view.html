@@ -115,20 +115,42 @@
 
     <br>
 
-
+    {{ parse }}
 
     {% for i in filter_fields_labels %}
             <div class="row">
                 <div class="col text-center">
-                    <label class="form-label" for="selector">{{ i.0 }}</label>
-                    <select style='width: 600px; margin: auto' class='form-select' id='selector' onchange='document.location=this.options[this.selectedIndex].value'>
-                        <option>{{ i.2 }}</option>
+                    <label class="form-label" for="selector{{ i }}">{{ i.0 }}</label>
+                    <select style='width: 600px; margin: auto' class='form-select' id='selector{{ i }}' onchange='document.location=this.options[this.selectedIndex].value'>
+                        <option>{{ i.3 }}</option>
                         {% for g in i %}
                             {% if g not in off_words %}
-                            <option value="{{ url }}&{{ i.1 }}={{ g }}">{{ g }}</option>
+                                <option value="{{ url }}&{{ i.1 }}={{ g }}">{{ g }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
+                </div>
+            </div>
+    {% endfor %}
+
+    {% for i in filter_fields_labels %}
+            <div class="row">
+                <div class="col text-center">
+                    <label class="form-label" for="selector">Количественные данные</label>
+                    <div class="row">
+                        <div class="col-6 text-right">
+                            <select style='width: 100px; margin-left: 85%;' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>
+                                <option value="{{ url }}">1</option>
+                                <option value="{{ url }}">2</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <select style='width: 100px;' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>
+                                <option value="{{ url }}">1</option>
+                                <option value="{{ url }}">2</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
     {% endfor %}

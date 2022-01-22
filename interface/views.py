@@ -12,20 +12,19 @@ import matplotlib.pyplot as plt
 from django.urls import resolve
 
 # Удаляет дубликаты гет-параметров
-# def clear_url(url):
-#     array = url.split('&')
-#     cleared = array[0]
-#     del array[0]
-#     array = array
-#     dict = {}
-#     for i in array:
-#         arr = i.split('=')
-#         dict[arr[0]] = arr[1]
-#     gets = list(dict.keys())
-#     vals = list(dict.values())
-#     for i in range(0, len(vals)):
-#         cleared = cleared + '&' + str(gets[i]) + '=' + str(vals[i])
-#     return cleared
+def is_get_param_in_this_url(url, get):
+    array = url.split('&')
+
+    del array[0]
+    array = array
+    dict = {}
+    for i in array:
+        arr = i.split('=')
+        dict[arr[0]] = arr[1]
+    gets = list(dict.keys())
+    if get in gets:
+        return True
+    return False
 
 # Функция достаёт данные по фильтрам таблицы
 def get_filters_data(class_name, section, subsection):
@@ -37,7 +36,7 @@ def get_filters_data(class_name, section, subsection):
 
 
 # Функция создаёт фильтры по полям. Аргумент - массив полей. Возврат - словарь с ключом "описание фильтра", а значением массив данных по полю
-def get_field_filters(model, array, request):
+def get_field_filters(model, array, url, request):
     arr1 = []
     for i in range(0, len(array)):
         label = Subsections_data.objects.filter(section_id = request.GET['section'], subsection_id = request.GET['sub_section'], sql_field_name = array[i])
@@ -46,12 +45,11 @@ def get_field_filters(model, array, request):
         for l in label:
             arr.append(l.html_descriptor)
             arr.append(l.sql_field_name)
-
-            # if (request.args.get(l.sql_field_name)):
-            #     arr.append(request.GET[l.sql_field_name])
-            # else:
-            #     arr.append('Все значения')
-
+            arr.append('Все значения')
+            if is_get_param_in_this_url(url, l.sql_field_name):
+                arr.append(request.GET[l.sql_field_name])
+            else:
+                arr.append('Выберите значение')
         datas = model.objects.filter(is_delete=0)
         for data in datas:
             if data.__getattribute__(array[i]) not in arr:
@@ -59,6 +57,26 @@ def get_field_filters(model, array, request):
 
         arr1.append((list((arr))))
     return arr1
+
+
+# Функция создаёт фильтры для количества
+def get_count_filters(model, array, url, request):
+    for i in range(0, len(array)):
+        arr1 = []
+        label = Subsections_data.objects.filter(section_id = request.GET['section'], subsection_id = request.GET['sub_section'], sql_field_name = array[i])
+        arr = []
+        for l in label:
+            arr.append(l.html_descriptor)
+            arr.append(l.sql_field_name)
+            if is_get_param_in_this_url(url, l.sql_field_name):
+                arr.append(request.GET[l.sql_field_name])
+            else:
+                arr.append('Выберите значение')
+        datas = model.objects.filter(is_delete=0)
+        for data in datas:
+            if data.__getattribute__(array[i]):
+                arr.append((data.__getattribute__(array[i])))
+    return flag
 
 
 # Функция формирует имя экземпляра класса (если не понятно, читаем документацию по моделям Django)
@@ -223,7 +241,8 @@ def table_view(request):
     dict = {}
     for i in range(0,len(l)):
         if l[i] != 'section' and l[i] != 'sub_section':
-            dict[l[i]] = request.GET[l[i]]
+            if request.GET[l[i]] != 'Все значения':
+                dict[l[i]] = request.GET[l[i]]
 
     # Достаём имя раздела по идентификатору, указанному в GET параметре
     section_id = request.GET['section']
@@ -267,15 +286,13 @@ def table_view(request):
     # 2 - кол-во (даты)
     # передаём эти элементы в методы получения фильтров
     filters = get_a_set_of_filters(filters)
-    filters_by_fields = get_field_filters(get_model_name(class_name),filters[0], request)
-    filters_by_fields_labels = filters_by_fields
-
     current_url = (request.get_full_path_info())
+
+    filters_by_fields_labels = get_field_filters(get_model_name(class_name),filters[0], current_url, request)
     # Запрос к базе данных
     table_data = get_model_name(class_name).objects.filter(**dict)
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
     data = get_table_data(table_structure, table_data)
-
 
     return render(request, 'interface/table_view.html', {
 
@@ -288,6 +305,7 @@ def table_view(request):
         'section': section,
         'section_id': section_id,
         'url': current_url,
+        # 'parse': parse,
 
         # 'indexes': indexes,
         # Подраздел
@@ -304,6 +322,7 @@ def table_view(request):
 
 def upload_file(request, sub_section):
         file = pd.read_excel(request.FILES['excel'])
+        t = type(file)
         # Тут хранится файл
         # Массив заголовков
         file_headers = list(file.columns.values)
