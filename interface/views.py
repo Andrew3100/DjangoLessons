@@ -26,6 +26,13 @@ def is_get_param_in_this_url(url, get):
         return True
     return False
 
+# Возвращает тип фильтра фильтра строкой
+def get_field_filter_type_name(filter,request):
+    datas = Subsections_data.objects.filter(section_id=request.GET['section'], subsection_id=request.GET['sub_section'], filter_type=filter)
+    for data in datas:
+        d = data.filter_type
+    return d
+
 # Функция достаёт данные по фильтрам таблицы
 def get_filters_data(class_name, section, subsection):
     filters_data = Subsections_data.objects.filter(section_id = section, subsection_id = subsection)
@@ -71,15 +78,10 @@ def get_field_filters(model, array, url, request):
             arr.append(l.html_descriptor)
             arr.append(l.sql_field_name)
             arr.append('Все значения')
-            if is_get_param_in_this_url(url, l.sql_field_name) or is_get_param_in_this_url(url, l.sql_field_name+'___rangestart'):
-                if is_get_param_in_this_url(url, l.sql_field_name + '___rangestart'):
-                    arr.append(request.GET[l.sql_field_name + '___rangestart'])
-                else:
-                    arr.append(request.GET[l.sql_field_name + '___rangeend'])
+            if is_get_param_in_this_url(url, l.sql_field_name):
+                arr.append(request.GET[l.sql_field_name])
             else:
                 arr.append('Выберите значение')
-            if is_get_param_in_this_url(url, l.sql_field_name + '___rangeend'):
-                arr.append(request.GET[l.sql_field_name + '___rangeend'])
         datas = model.objects.filter(is_delete=0)
         for data in datas:
             if data.__getattribute__(array[i]) not in arr:
@@ -89,6 +91,34 @@ def get_field_filters(model, array, url, request):
     return arr1
 
 
+def get_count_filters(model, array, url, request):
+    arr1 = []
+    for i in range(0, len(array)):
+        label = Subsections_data.objects.filter(section_id=request.GET['section'],
+                                                subsection_id=request.GET['sub_section'], sql_field_name=array[i])
+        arr = []
+        # Имя метки:
+        for l in label:
+            arr.append(l.html_descriptor)
+            arr.append(l.sql_field_name)
+            arr.append('Всё')
+            if is_get_param_in_this_url(url, l.sql_field_name) or is_get_param_in_this_url(url,
+                                                                                           l.sql_field_name + '___rangestart'):
+                if is_get_param_in_this_url(url, l.sql_field_name + '___rangestart'):
+                    arr.append(request.GET[l.sql_field_name + '___rangestart'])
+                else:
+                    arr.append(request.GET[l.sql_field_name + '___rangeend'])
+            else:
+                arr.append('')
+            if is_get_param_in_this_url(url, l.sql_field_name + '___rangeend'):
+                arr.append(request.GET[l.sql_field_name + '___rangeend'])
+        datas = model.objects.filter(is_delete=0)
+        for data in datas:
+            if data.__getattribute__(array[i]) not in arr:
+                arr.append(data.__getattribute__(array[i]))
+
+        arr1.append((list((arr))))
+    return arr1
 
 
 # Функция формирует имя экземпляра класса (если не понятно, читаем документацию по моделям Django)
@@ -277,7 +307,10 @@ def table_view(request):
     for t in table_structure:
         off_words.append(t.sql_field_name)
         off_words.append(t.html_descriptor)
+        off_words.append('')
     class_name = get_class_name_by_section_subsection(sub_section)
+
+
 
     # Достаём данные по фильтрам таблицы
     # переменная filters это словарь где ключ - поле БД, которое фильтруется, а значение - тип фильтра.
@@ -295,19 +328,21 @@ def table_view(request):
     current_url = (request.get_full_path_info())
     # Получаем фильтры по полям
     filters_by_fields_labels = get_field_filters(get_model_name(class_name),filters[0], current_url, request)
+    # Получаем фильтры по количественным данным.
+    filters_by_counts_datas = get_count_filters(get_model_name(class_name), filters[1], current_url, request)
 
-    # Получаем фильтры по количественным данным. Принцип создания селекторов такой же как и в типе field, поэтому используем функцию get_field_filters
-    filters_by_counts_datas = get_field_filters(get_model_name(class_name), filters[1], current_url, request)
+
 
     l = list(request.GET)
     dict = {}
     for i in range(0, len(l)):
         if l[i] != 'section' and l[i] != 'sub_section':
-            if request.GET[l[i]] != 'Все значения' and '_range' not in l[i]:
+            # Блок условий проверяет, есть ли необходимость добавить ранжирование параметра (для количественных данных)
+            if request.GET[l[i]] != 'Всё' and '_range' not in l[i]:
                dict[filter_MySQL_field(l[i])] = request.GET[l[i]]
-            if '_rangestart' in l[i] and request.GET[l[i]] != 'Все значения':
+            if '_rangestart' in l[i] and request.GET[l[i]] != 'Всё':
                dict[filter_MySQL_field(l[i]) + '__range'] = (filter_MySQL_field(request.GET[l[i]]), get_max_value_on_field(get_model_name(class_name),l[i],'max',request))
-            if '_rangeend' in l[i] and request.GET[l[i]] != 'Все значения':
+            if '_rangeend' in l[i] and request.GET[l[i]] != 'Всё':
                dict[filter_MySQL_field(l[i]) + '__range'] = (get_max_value_on_field(get_model_name(class_name),l[i],'min',request), filter_MySQL_field(request.GET[l[i]]))
     # Запрос к базе данных
     table_data = get_model_name(class_name).objects.filter(**dict)
@@ -326,6 +361,7 @@ def table_view(request):
         'section': section,
         'section_id': section_id,
         'url': current_url,
+        'arr1': filters[1],
         # 'parse': parse,
 
         # 'indexes': indexes,

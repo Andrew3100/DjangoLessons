@@ -91,55 +91,61 @@
 
         </div>
     </div>
-    <br>
+
     <br>
 
     <div class="container">
     <table class="table table-bordered table-dark text-center">
-    <form method="POST">
-    <div class="row">
-        <div class="col text-center">
-            <button class="btn btn-outline-warning text-center"><span style="color: black">Сохранить в Excel</span></button>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col text-center">
-            <p>Уберите отдельные поля в заголовке таблицы, если их не нужно включать в отчёт. Система сформирует отчёт, включив те записи, которые есть в этой таблице</p>
-        </div>
-    </div>
-
-    <br>
+{#    <div class="row">#}
+{#        <div class="col text-center">#}
+{#            <p>Уберите отдельные поля в заголовке таблицы, если их не нужно включать в отчёт. Система сформирует отчёт, включив те записи, которые есть в этой таблице</p>#}
+{#        </div>#}
+{#    </div>#}
 
 
-
-    {% for i in filter_fields_labels %}
-            <div class="row">
-                <div class="col text-center">
-                    <label class="form-label" for="selector{{ i }}">{{ i.0 }}</label>
-                    <select style='width: 600px; margin: auto' class='form-select' id='selector{{ i }}' onchange='document.location=this.options[this.selectedIndex].value'>
-                        <option>{{ i.3 }}</option>
-                        {% for g in i %}
-                            {% if g not in off_words %}
-                                <option value="{{ url }}&{{ i.1 }}={{ g }}">{{ g }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <p style="text-align: center"><a class="btn btn-warning" href="table_view?section=1&sub_section=1">Сбросить фильтры</a></p>
             </div>
+        </div>
+    </div>
+    <br>
+
+<div class="container">
+    <div class="row">
+        <div class="col-6">
+            {% for i in filter_fields_labels %}
+                <div class="row">
+                    <div class="col-3">
+                        <label class="form-label" for="selector{{ i }}">{{ i.0 }}</label>
+                    </div>
+                    <div class="col-9">
+                        <div class="col">
+
+                            <select style='width: 300px;' class='form-select' id='selector{{ i }}' onchange='document.location=this.options[this.selectedIndex].value'>
+                                <option>{{ i.3 }}</option>
+                                {% for g in i %}
+                                    {% if g not in off_words %}
+                                        <option value="{{ url }}&{{ i.1 }}={{ g }}">{{ g }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <br>
     {% endfor %}
-        <a class="btn btn-warning" href="table_view?section=1&sub_section=1">Сбросить фильтры</a>
-{#    {{ filters_by_counts_datas }}#}
-    {{ dict }}
-    <br>
-    <br>
-    {{ filters_by_counts_datas }}
-    {% for counts in filters_by_counts_datas %}
-            <div class="row">
+        </div>
+        <div class="col-6">
+            {% for counts in filters_by_counts_datas %}
                 <div class="col text-center">
-                    <label class="form-label" for="selector">{{ counts.0 }}</label>
                     <div class="row">
-                        <div class="col-6 text-right">
-                            <select style='width: 100px; margin-left: 85%;' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>
+                        <div class="col-6">
+                            <label class="form-label" for="selector" style="margin-top: 5px;">{{ counts.0 }}</label>
+                        </div>
+                        <div class="col-3">
+                            <select style='width: 75px; margin-left: 10%;' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>
                                 <option>{{ counts.3 }}</option>
                                 {% for c in counts %}
                                     {% if c not in off_words %}
@@ -148,8 +154,8 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-6">
-                            <select style='width: 100px;' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>
+                        <div class="col-3">
+                            <select style='width: 75px; margin-left: -25%' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>
                                 <option>{{ counts.4 }}</option>
                                 {% for c in counts %}
                                     {% if c not in off_words %}
@@ -159,10 +165,21 @@
                             </select>
                         </div>
                     </div>
+                    <br>
                 </div>
-            </div>
     {% endfor %}
+        </div>
 
+    </div>
+</div>
+
+
+<form method="POST">
+    <div class="row">
+        <div class="col text-center">
+            <button class="btn btn-outline-warning text-center"><span style="color: black">Сохранить в Excel</span></button>
+        </div>
+    </div>
     <br>
     <br>
     {% for structure in table_structure %}
