@@ -10,4 +10,5 @@ urlpatterns = [
     path('table', views.table_list),
     path('table_view', views.table_view),
     path('add', views.add),
+    path('excel', views.excel_report),
 ]

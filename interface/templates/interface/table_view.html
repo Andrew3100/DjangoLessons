@@ -174,7 +174,8 @@
 </div>
 
 
-<form method="POST">
+<form method="POST" action="/excel">
+{% csrf_token %}
     <div class="row">
         <div class="col text-center">
             <button class="btn btn-outline-warning text-center"><span style="color: black">Сохранить в Excel</span></button>

@@ -1,6 +1,8 @@
 from django.http import HttpRequest
 from django.http import HttpResponse
-
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm
+from django.views.generic.detail import SingleObjectMixin
 from django.shortcuts import render
 from django import forms
 from .models import *
@@ -10,6 +12,13 @@ import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 from django.urls import resolve
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import AccessMixin
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django import *
+
+
 
 # Проверяет, входит ли заданный GET-параметр в URL
 def is_get_param_in_this_url(url, get):
@@ -189,6 +198,24 @@ def get_table_data(table_structure, table_data):
     return full_data
 
 
+def get_dict_by_GET(request, list_GET):
+    dict = {}
+    for i in range(0, len(list_GET)):
+        if l[i] != 'section' and l[i] != 'sub_section':
+            # Блок условий проверяет, есть ли необходимость добавить ранжирование параметра (для количественных данных)
+            if request.GET[l[i]] != 'Всё' and '_range' not in l[i]:
+                dict[filter_MySQL_field(l[i])] = request.GET[l[i]]
+            if '_rangestart' in l[i] and request.GET[l[i]] != 'Всё':
+                dict[filter_MySQL_field(l[i]) + '__range'] = (filter_MySQL_field(request.GET[l[i]]),
+                                                              get_max_value_on_field(get_model_name(class_name), l[i],
+                                                                                     'max', request))
+            if '_rangeend' in l[i] and request.GET[l[i]] != 'Всё':
+                dict[filter_MySQL_field(l[i]) + '__range'] = (
+                get_max_value_on_field(get_model_name(class_name), l[i], 'min', request),
+                filter_MySQL_field(request.GET[l[i]]))
+    return list_GET
+
+
 # Create your views here.
 def header(request):
     return render(request, 'interface/header/header.html')
@@ -217,6 +244,10 @@ def new_block(request):
 
 def reports(request):
     return render(request, 'interface/reports.html')
+
+
+def login(request):
+    return render(request, 'interface/login.html')
 
 
 def table_list(request):
@@ -274,6 +305,51 @@ def add(request):
 
     return render(request, 'interface/add.html', {
         'url': new_url
+    })
+
+
+# Загружает файл из папки сохранённых отчётов
+def load_file(path, request):
+    import xlwt
+    import pandas
+    import mimetypes
+    import os
+    f = 'interface/reports/cr2020.xlsx'
+    fp = open(f, "rb")
+    response = HttpResponse(fp.read())
+    fp.close()
+
+    file_type = mimetypes.guess_type(f)
+    if file_type is None:
+        file_type = 'application/octet-stream'
+    response['Content-Type'] = file_type
+    response['Content-Length'] = str(os.stat(f).st_size)
+    response['Content-Disposition'] = "attachment; filename=report.xlsx"
+    return response
+
+def excel_report(request):
+    url = request.get_full_path_info()
+
+    f = 'interface/reports/cr2020.xlsx'
+
+    # return load_file(f, request)
+
+    # response = HttpResponse(content_type='application/ms_excel')
+    # response['Content-Disposition'] = 'attachment; filename=Expenses.xls'
+    # book = xlwt.Workbook(encoding='utf-8')
+    # book1 = book.add_sheet('Expenses')
+    # row_num = 0
+    # font_style = xlwt.XFStyle()
+    # font_style.font.bold = True
+    #
+    # cols = ['1','2','3']
+    #
+    # for col in range(0, len(cols)):
+    #     book1.write(row_num, col, cols[col], font_style)
+    # book.save(response)
+    # return response
+    return render(request, 'interface/report.html', {
+        'post': get_dict_by_GET(request, list(request.GET))
     })
 
 
@@ -439,3 +515,6 @@ def GetCountriesList(request):
         if fn != '':
             Dict[countr.fullname] = countr.id
     return Dict
+
+
+
