@@ -17,7 +17,14 @@ from django.contrib.auth.mixins import AccessMixin
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django import *
+import urllib.parse
 
+def urlencode(str):
+  return urllib.parse.quote(str)
+
+
+def urldecode(str):
+  return urllib.parse.unquote(str)
 
 
 # Проверяет, входит ли заданный GET-параметр в URL
@@ -53,7 +60,7 @@ def get_filters_data(class_name, section, subsection):
 
 # Функция создана для того, чтобы вернуть нужное число диапазона при отборе записей в базе данных
 def get_max_value_on_field(model,field,param,request):
-    if is_get_param_in_this_url(request.get_full_path_info(), filter_MySQL_field(field)+'___rangestart') == True:
+    if is_get_param_in_this_url(request.get_full_path_info(), filter_MySQL_field(field)+'___rangestart') == True and '___rangeend' in field == True:
         return request.GET[filter_MySQL_field(field)+'___rangestart']
     field = filter_MySQL_field(field)
     datas = model.objects.filter(is_delete=0)
@@ -327,13 +334,106 @@ def load_file(path, request):
     response['Content-Disposition'] = "attachment; filename=report.xlsx"
     return response
 
-def excel_report(request):
-    url = request.get_full_path_info()
 
-    f = 'interface/reports/cr2020.xlsx'
+
+# Проверяет является ли поле количественным и получает для него диапазон
+def get_filter_diapason(field, model, url, request):
+    start = 0
+    end = 0
+
+    parse_url = url.split('&')
+    del parse_url[0]
+    del parse_url[0]
+
+    for i in range(0, len(parse_url)):
+        datas = parse_url[i].split('=')
+
+        # Запрос на проверку типа фильтра поля
+        is_count = Subsections_data.objects.filter(section_id = request.POST['s'],subsection_id = request.POST['ss'],sql_field_name=filter_MySQL_field(field))
+        for is_counted in is_count:
+            # Если поле не количественное, то получаем диапазон количественных данных
+            if is_counted.filter_type != 'count':
+                return False
+            else:
+                if is_get_param_in_this_url(url, field):
+                    if '___rangestart' in datas[0]:
+                        start = datas[1]
+                    if '___rangeend' in datas[0]:
+                        end = datas[1]
+    return start,end
+
+
+def GET_dictionary(url):
+    dict = {}
+    parse = url.split('&')
+    for par in parse:
+        parss = par.split('=')
+        if 'section' not in parss[0]:
+            dict[parss[0]] = urldecode(parss[1])
+    return dict
+
+def get_min_or_max(param,field,model):
+    datas = model.objects.filter(is_delete=0)
+    maxs = []
+    for data in datas:
+        maxs.append(int(data.__getattribute__(field)))
+    if param == 'min':
+        return min(list(set(maxs)))
+    else:
+        return max(list(set(maxs)))
+
+
+def merge_range_data(dictionary, model):
+    vals = list(dictionary.values())
+    keys = list(dictionary.keys())
+    dict = {}
+    starts = {}
+    ends = {}
+    for i in range(0, len(keys)):
+        if '___range' in keys[i]:
+            if '___rangestart' in keys[i]:
+                if (vals[i]) == 'Всё' or 'Все значения':
+                    starts[filter_MySQL_field(keys[i])] = get_min_or_max('min',filter_MySQL_field(keys[i]),model) # взять минимальное по полю
+                else:
+                    starts[filter_MySQL_field(keys[i])] = vals[i]
+            if '___rangeend' in keys[i]:
+                if (vals[i]) == 'Всё' or 'Все значения':
+                    ends[filter_MySQL_field(keys[i])] = str(get_min_or_max('max',filter_MySQL_field(keys[i]),model)) # взять максимальное по полю
+                else:
+                    ends[filter_MySQL_field(keys[i])] = str(vals[i])
+        else:
+            dict[keys[i]] = vals[i]
+    keys = list(starts.keys())
+    for i in range(0, len(keys)):
+        dict[keys[i]+'__range'] = (starts[keys[i]], ends[keys[i]])
+    # Словарь, готовый для распаковки
+    return starts, ends
+
+
+def excel_report(request):
+
+    url = request.POST['url']
+    section_id = request.POST['s']
+    sub_section_id = request.POST['ss']
+    classname = get_class_name_by_section_subsection(sub_section=Sub_sections.objects.filter(id=sub_section_id))
+    model = get_model_name(classname)
+    post_array0 = list(request.POST)
+    post_array1 = []
+    # Из списка постов формируем список полей, забираемых в отчёт. Начало с двух, так как первые два элементы не нужны
+    for i in range(2, len(post_array0)):
+        post_array1.append((post_array0[i]))
+
+    # Получили словарь GET данных
+    get_dictionary = GET_dictionary(url)
+    # Создаём словарь для запроса
+    merge_data = merge_range_data(get_dictionary, model)
+
+    datas_for_report = model.objects.filter(**merge_data[0])
+
 
     # return load_file(f, request)
 
+    # f = 'interface/reports/cr2020.xlsx'
     # response = HttpResponse(content_type='application/ms_excel')
     # response['Content-Disposition'] = 'attachment; filename=Expenses.xls'
     # book = xlwt.Workbook(encoding='utf-8')
@@ -349,7 +449,10 @@ def excel_report(request):
     # book.save(response)
     # return response
     return render(request, 'interface/report.html', {
-        'post': get_dict_by_GET(request, list(request.GET))
+        'post': get_dictionary,
+        'pars': merge_data,
+        'datas': datas_for_report,
+
     })
 
 

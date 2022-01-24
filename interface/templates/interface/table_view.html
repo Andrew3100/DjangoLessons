@@ -136,6 +136,9 @@
                 </div>
                 <br>
     {% endfor %}
+
+        {{ dict }}
+
         </div>
         <div class="col-6">
             {% for counts in filters_by_counts_datas %}
@@ -183,10 +186,13 @@
     </div>
     <br>
     <br>
+    <input type="hidden" name="url" value="{{ url }}">
+    <input type="hidden" name="s" value="{{ section_id }}">
+    <input type="hidden" name="ss" value="{{ sub_section_id }}">
     {% for structure in table_structure %}
         <td>
         <label class="form-label" for="{{ structure.sql_field_name }}">{{ structure.html_descriptor }}</label>
-        <input id="{{ structure.sql_field_name }}" type="checkbox" name="{{ structure.sql_field_name }}_check_for_excel" class="checkbox-inline" value="{{ structure.html_descriptor }}" checked>
+        <input id="{{ structure.sql_field_name }}" type="checkbox" name="{{ structure.sql_field_name }}" class="checkbox-inline" value="{{ structure.html_descriptor }}" checked>
         </td>
     {% endfor %}
     </form>
