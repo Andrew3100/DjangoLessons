@@ -137,7 +137,8 @@
                 <br>
     {% endfor %}
 
-        {{ dict }}
+    {{ diap }}
+{#        <input type="text" id="test" class="form-control" onmouseleave='window.location.href=`{{ url }}&graduate_students___rangeend=${document.getElementById(`test`).value}`'>#}
 
         </div>
         <div class="col-6">
@@ -148,24 +149,7 @@
                             <label class="form-label" for="selector" style="margin-top: 5px;">{{ counts.0 }}</label>
                         </div>
                         <div class="col-3">
-                            <select style='width: 75px; margin-left: 10%;' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>
-                                <option>{{ counts.3 }}</option>
-                                {% for c in counts %}
-                                    {% if c not in off_words %}
-                                        <option value="{{ url }}&{{ counts.1 }}___rangestart={{ c }}">{{ c }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-3">
-                            <select style='width: 75px; margin-left: -25%' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>
-                                <option>{{ counts.4 }}</option>
-                                {% for c in counts %}
-                                    {% if c not in off_words %}
-                                        <option value="{{ url }}&{{ counts.1 }}___rangeend={{ c }}">{{ c }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
+                            <input type="text" id="{{ counts.1 }}_id" class="form-control" value="" onfocusout='window.location.href=`{{ url }}&{{ counts.1 }}__range=${document.getElementById(`{{ counts.1 }}_id`).value}`'>
                         </div>
                     </div>
                     <br>
@@ -208,3 +192,83 @@
     </div>
 
 {% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{##}
+{#<div class="col-6">#}
+{#            {% for counts in filters_by_counts_datas %}#}
+{#                <div class="col text-center">#}
+{#                    <div class="row">#}
+{#                        <div class="col-6">#}
+{#                            <label class="form-label" for="selector" style="margin-top: 5px;">{{ counts.0 }}</label>#}
+{#                        </div>#}
+{#                        <div class="col-3">#}
+{#                            <select style='width: 75px; margin-left: 10%;' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>#}
+{#                                <option>{{ counts.3 }}</option>#}
+{#                                {% for c in counts %}#}
+{#                                    {% if c not in off_words %}#}
+{#                                        <option value="{{ url }}&{{ counts.1 }}___rangestart={{ c }}">{{ c }}</option>#}
+{#                                    {% endif %}#}
+{#                                {% endfor %}#}
+{#                            </select>#}
+{#                        </div>#}
+{#                        <div class="col-3">#}
+{#                            <select style='width: 75px; margin-left: -25%' class='form-select' onchange='document.location=this.options[this.selectedIndex].value'>#}
+{#                                <option>{{ counts.4 }}</option>#}
+{#                                {% for c in counts %}#}
+{#                                    {% if c not in off_words %}#}
+{#                                        <option value="{{ url }}&{{ counts.1 }}___rangeend={{ c }}">{{ c }}</option>#}
+{#                                    {% endif %}#}
+{#                                {% endfor %}#}
+{#                            </select>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <br>#}
+{#                </div>#}
+{#    {% endfor %}#}
+{#        </div>#}

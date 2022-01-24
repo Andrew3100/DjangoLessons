@@ -76,7 +76,7 @@ def get_max_value_on_field(model,field,param,request):
 
 # Функция фильтрует GET-параметры до исходного названия полей в MySQL.
 def filter_MySQL_field(field):
-    f = field.split('___')
+    f = field.split('__')
     if f != []:
         return (f[0])
     else:
@@ -456,6 +456,19 @@ def excel_report(request):
     })
 
 
+def get_diap(data,field,class_name):
+    get_max = get_min_or_max('max', filter_MySQL_field(field), get_model_name(class_name))
+    get_min = get_min_or_max('min', filter_MySQL_field(field), get_model_name(class_name))
+    a = list(data)
+    array = data.split('-')
+    if array[1] == '':
+        array[1] = get_max
+    if array[0] == '':
+        array[0] = get_min
+    return array
+
+
+
 def table_view(request):
 
 
@@ -489,8 +502,6 @@ def table_view(request):
         off_words.append('')
     class_name = get_class_name_by_section_subsection(sub_section)
 
-
-
     # Достаём данные по фильтрам таблицы
     # переменная filters это словарь где ключ - поле БД, которое фильтруется, а значение - тип фильтра.
     # Типы фильтров:
@@ -510,19 +521,19 @@ def table_view(request):
     # Получаем фильтры по количественным данным.
     filters_by_counts_datas = get_count_filters(get_model_name(class_name), filters[1], current_url, request)
 
-
-
     l = list(request.GET)
     dict = {}
+    diap = ''
     for i in range(0, len(l)):
         if l[i] != 'section' and l[i] != 'sub_section':
-            # Блок условий проверяет, есть ли необходимость добавить ранжирование параметра (для количественных данных)
-            if request.GET[l[i]] != 'Всё' and '_range' not in l[i]:
-               dict[filter_MySQL_field(l[i])] = request.GET[l[i]]
-            if '_rangestart' in l[i] and request.GET[l[i]] != 'Всё':
-               dict[filter_MySQL_field(l[i]) + '__range'] = (filter_MySQL_field(request.GET[l[i]]), get_max_value_on_field(get_model_name(class_name),l[i],'max',request))
-            if '_rangeend' in l[i] and request.GET[l[i]] != 'Всё':
-               dict[filter_MySQL_field(l[i]) + '__range'] = (get_max_value_on_field(get_model_name(class_name),l[i],'min',request), filter_MySQL_field(request.GET[l[i]]))
+            if '__range' in l[i]:
+
+                diap = get_diap(request.GET[l[i]],l[i],class_name)
+                dict[l[i]] = diap
+            else:
+                dict[l[i]] = request.GET[l[i]]
+
+
     # Запрос к базе данных
     table_data = get_model_name(class_name).objects.filter(**dict)
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
@@ -535,6 +546,7 @@ def table_view(request):
         'filters_by_counts_datas': filters_by_counts_datas,
         'off_words': off_words,
         'dict': dict,
+        'diap': diap,
         # 'filter_fields_datas': filters_by_fields_datas,
         # Раздел
         'section': section,
