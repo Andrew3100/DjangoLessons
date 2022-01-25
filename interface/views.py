@@ -304,19 +304,18 @@ def add(request):
 # Загружает файл из папки сохранённых отчётов
 def load_file(path, request):
     import xlwt
-    import pandas
     import mimetypes
     import os
-    f = 'interface/reports/cr2020.xlsx'
-    fp = open(f, "rb")
+
+    fp = open(path, "rb")
     response = HttpResponse(fp.read())
     fp.close()
 
-    file_type = mimetypes.guess_type(f)
+    file_type = mimetypes.guess_type(path)
     if file_type is None:
         file_type = 'application/octet-stream'
     response['Content-Type'] = file_type
-    response['Content-Length'] = str(os.stat(f).st_size)
+    response['Content-Length'] = str(os.stat(path).st_size)
     response['Content-Disposition'] = "attachment; filename=report.xlsx"
     return response
 
@@ -397,13 +396,10 @@ def merge_range_data(dictionary, model):
 
 
 def excel_report(request):
-
-
-
+    import pandas
+    import time as t
     section_id = request.POST['s']
     sub_section_id = request.POST['ss']
-
-
 
     classname = get_class_name_by_section_subsection(sub_section=Sub_sections.objects.filter(id=sub_section_id))
     model = get_model_name(classname)
@@ -420,25 +416,28 @@ def excel_report(request):
     for h in headers1:
         headers.append(h.html_descriptor)
     dict = get_dictionary(request, classname)
-    datas_for_report = model.objects.filter(**dict)
 
-    pandas_df = {}
-    vals = []
-    for data_for_report in datas_for_report:
-        vals1 = []
-        for post_array in post_array1:
-            vals1.append(data_for_report.__getattribute__(post_array))
-        vals.append(vals1)
-        del vals1
+    data_full = []
+    for post in post_array1:
+        data = []
+        datas = model.objects.filter(**dict)
+        for dat in datas:
+            data.append(dat.__getattribute__(post))
+        data_full.append(data)
 
-    for header in range(0,len(headers)):
-        pandas_df[headers[header]] = vals[header]
+    dictionary = {}
+    for i in range(0, len(headers)):
+        # Тут датафрейм, из которого формируется Excel и сохраняестя на сервер
+        dictionary[headers[i]] = data_full[i]
+    pandas_DF = pandas.DataFrame(dictionary)
+    time_label_filename = t.time()
+    save_path = 'interface/reports/'+str(time_label_filename)+'.xlsx'
+    pandas_DF.to_excel(save_path,sheet_name='отчёт', index=False)
+    writer = pd.ExcelWriter('test_file.xlsx')
+    pandas_DF.to_excel(writer, sheet_name='my_analysis', index=False, na_rep='NaN')
 
 
-
-
-
-    # return load_file(f, request)
+    return load_file(save_path, request)
 
     # f = 'interface/reports/cr2020.xlsx'
     # response = HttpResponse(content_type='application/ms_excel')
@@ -455,12 +454,12 @@ def excel_report(request):
     #     book1.write(row_num, col, cols[col], font_style)
     # book.save(response)
     # return response
-    return render(request, 'interface/report.html', {
-        # 'post': get_dictionary,
-        # 'pars': merge_data,
-        'datas': pandas_df,
-
-    })
+    # return render(request, 'interface/report.html', {
+    #     'post': get_dictionary,
+    #     'pars': merge_data,
+        # 'datas': pandas_DF,
+    #
+    # })
 
 
 def get_diap(data,field,class_name):
@@ -488,7 +487,6 @@ def get_dictionary(request, class_name):
     return dict
 
 def table_view(request):
-
 
     # Достаём имя раздела по идентификатору, указанному в GET параметре
     section_id = request.GET['section']

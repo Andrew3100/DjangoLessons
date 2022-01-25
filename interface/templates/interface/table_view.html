@@ -106,7 +106,10 @@
     <div class="container">
         <div class="row">
             <div class="col">
-                <p style="text-align: center"><a class="btn btn-warning" href="table_view?section=1&sub_section=1">Сбросить фильтры</a></p>
+                <button form="excel" class="btn btn-outline-primary text-center"><span style="color: black">Сохранить в Excel</span></button>
+            </div>
+            <div class="col">
+                <p style="text-align: right"><a class="btn btn-outline-secondary" href="table_view?section=1&sub_section=1">Сбросить фильтры</a></p>
             </div>
         </div>
     </div>
@@ -118,11 +121,10 @@
             {% for i in filter_fields_labels %}
                 <div class="row">
                     <div class="col-3">
-                        <label class="form-label" for="selector{{ i }}">{{ i.0 }}</label>
+                        <label style="margin-top: 6px; text-align: center" class="form-label" for="selector{{ i }}">{{ i.0 }}</label>
                     </div>
                     <div class="col-9">
                         <div class="col">
-
                             <select style='width: 300px;' class='form-select' id='selector{{ i }}' onchange='document.location=this.options[this.selectedIndex].value'>
                                 <option>{{ i.3 }}</option>
                                 {% for g in i %}
@@ -137,8 +139,8 @@
                 <br>
     {% endfor %}
 
-    {{ diap }}
-{#        <input type="text" id="test" class="form-control" onmouseleave='window.location.href=`{{ url }}&graduate_students___rangeend=${document.getElementById(`test`).value}`'>#}
+
+            {#        <input type="text" id="test" class="form-control" onmouseleave='window.location.href=`{{ url }}&graduate_students___rangeend=${document.getElementById(`test`).value}`'>#}
 
         </div>
         <div class="col-6">
@@ -163,16 +165,12 @@
 
 
 
-<form method="POST" action="/excel?{{ url1 }}">
+<form id="excel" method="POST" action="/excel?{{ url1 }}">
 {% csrf_token %}
-    <div class="row">
-        <div class="col text-center">
-            <button class="btn btn-outline-warning text-center"><span style="color: black">Сохранить в Excel</span></button>
-        </div>
-    </div>
+
     <br>
-    <br>
-    <input type="text" name="url" value="{{ url }}">
+
+    <input type="hidden" name="url" value="{{ url }}">
     <input type="hidden" name="s" value="{{ section_id }}">
     <input type="hidden" name="ss" value="{{ sub_section_id }}">
     {% for structure in table_structure %}
