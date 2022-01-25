@@ -149,19 +149,21 @@
                             <label class="form-label" for="selector" style="margin-top: 5px;">{{ counts.0 }}</label>
                         </div>
                         <div class="col-3">
-                            <input type="text" id="{{ counts.1 }}_id" class="form-control" value="" onfocusout='window.location.href=`{{ url }}&{{ counts.1 }}__range=${document.getElementById(`{{ counts.1 }}_id`).value}`'>
+                            <input type="text" id="{{ counts.1 }}_id" class="form-control" value="{{ counts.2 }}" onfocusout='if (document.getElementById(`{{ counts.1 }}_id`).value == ``) {
+                            alert(`Введите параметр для фильтрации в соответствии с документацией`); exit();}; window.location.href=`{{ url }}&{{ counts.1 }}__range=${document.getElementById(`{{ counts.1 }}_id`).value}`'>
                         </div>
                     </div>
                     <br>
                 </div>
     {% endfor %}
         </div>
-
     </div>
 </div>
 
 
-<form method="POST" action="/excel">
+
+
+<form method="POST" action="/excel?{{ url1 }}">
 {% csrf_token %}
     <div class="row">
         <div class="col text-center">
@@ -170,7 +172,7 @@
     </div>
     <br>
     <br>
-    <input type="hidden" name="url" value="{{ url }}">
+    <input type="text" name="url" value="{{ url }}">
     <input type="hidden" name="s" value="{{ section_id }}">
     <input type="hidden" name="ss" value="{{ sub_section_id }}">
     {% for structure in table_structure %}
@@ -272,3 +274,15 @@
 {#                </div>#}
 {#    {% endfor %}#}
 {#        </div>#}
+
+<script>
+    function isValid(param) {
+        if (param == '') {
+            alert(`Введите параметр для фильтрации в соответствии с документацией:\n
+            1) Для того чтобы задать только минимальное введите его с тире (10-). Будут показаны записи со значением поля от 10 и более\n
+            2) Для диапазона значений введите два числа через тире (10-20). Будут показаны записи со значением поля от 10 до 20\n
+            3) Для выборки максимального введите тире и число (-20). Будут показаны записи со значением поля не больше 20`);
+            exit();
+        }
+    }
+</script>

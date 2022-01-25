@@ -117,22 +117,8 @@ def get_count_filters(model, array, url, request):
         for l in label:
             arr.append(l.html_descriptor)
             arr.append(l.sql_field_name)
-            arr.append('Всё')
-            if is_get_param_in_this_url(url, l.sql_field_name) or is_get_param_in_this_url(url,
-                                                                                           l.sql_field_name + '___rangestart'):
-                if is_get_param_in_this_url(url, l.sql_field_name + '___rangestart'):
-                    arr.append(request.GET[l.sql_field_name + '___rangestart'])
-                else:
-                    arr.append(request.GET[l.sql_field_name + '___rangeend'])
-            else:
-                arr.append('')
-            if is_get_param_in_this_url(url, l.sql_field_name + '___rangeend'):
-                arr.append(request.GET[l.sql_field_name + '___rangeend'])
-        datas = model.objects.filter(is_delete=0)
-        for data in datas:
-            if data.__getattribute__(array[i]) not in arr:
-                arr.append(data.__getattribute__(array[i]))
-
+            if is_get_param_in_this_url(url, l.sql_field_name+'__range'):
+                arr.append(request.GET[l.sql_field_name+'__range'])
         arr1.append((list((arr))))
     return arr1
 
@@ -412,9 +398,13 @@ def merge_range_data(dictionary, model):
 
 def excel_report(request):
 
-    url = request.POST['url']
+
+
     section_id = request.POST['s']
     sub_section_id = request.POST['ss']
+
+
+
     classname = get_class_name_by_section_subsection(sub_section=Sub_sections.objects.filter(id=sub_section_id))
     model = get_model_name(classname)
     post_array0 = list(request.POST)
@@ -422,13 +412,30 @@ def excel_report(request):
     # Из списка постов формируем список полей, забираемых в отчёт. Начало с двух, так как первые два элементы не нужны
     for i in range(2, len(post_array0)):
         post_array1.append((post_array0[i]))
+    del post_array1[0]
+    del post_array1[0]
+    # Заголовки для датафрейма
+    headers = []
+    headers1 = Subsections_data.objects.filter(section_id=section_id, subsection_id=sub_section_id, sql_field_name__in=post_array1)
+    for h in headers1:
+        headers.append(h.html_descriptor)
+    dict = get_dictionary(request, classname)
+    datas_for_report = model.objects.filter(**dict)
 
-    # Получили словарь GET данных
-    get_dictionary = GET_dictionary(url)
-    # Создаём словарь для запроса
-    merge_data = merge_range_data(get_dictionary, model)
+    pandas_df = {}
+    vals = []
+    for data_for_report in datas_for_report:
+        vals1 = []
+        for post_array in post_array1:
+            vals1.append(data_for_report.__getattribute__(post_array))
+        vals.append(vals1)
+        del vals1
 
-    datas_for_report = model.objects.filter(**merge_data[0])
+    for header in range(0,len(headers)):
+        pandas_df[headers[header]] = vals[header]
+
+
+
 
 
     # return load_file(f, request)
@@ -449,9 +456,9 @@ def excel_report(request):
     # book.save(response)
     # return response
     return render(request, 'interface/report.html', {
-        'post': get_dictionary,
-        'pars': merge_data,
-        'datas': datas_for_report,
+        # 'post': get_dictionary,
+        # 'pars': merge_data,
+        'datas': pandas_df,
 
     })
 
@@ -467,7 +474,18 @@ def get_diap(data,field,class_name):
         array[0] = get_min
     return array
 
-
+def get_dictionary(request, class_name):
+    l = list(request.GET)
+    dict = {}
+    diap = ''
+    for i in range(0, len(l)):
+        if l[i] != 'section' and l[i] != 'sub_section':
+            if '__range' in l[i]:
+                diap = get_diap(request.GET[l[i]], l[i], class_name)
+                dict[l[i]] = diap
+            else:
+                dict[l[i]] = request.GET[l[i]]
+    return dict
 
 def table_view(request):
 
@@ -521,37 +539,35 @@ def table_view(request):
     # Получаем фильтры по количественным данным.
     filters_by_counts_datas = get_count_filters(get_model_name(class_name), filters[1], current_url, request)
 
-    l = list(request.GET)
-    dict = {}
-    diap = ''
-    for i in range(0, len(l)):
-        if l[i] != 'section' and l[i] != 'sub_section':
-            if '__range' in l[i]:
-
-                diap = get_diap(request.GET[l[i]],l[i],class_name)
-                dict[l[i]] = diap
-            else:
-                dict[l[i]] = request.GET[l[i]]
+    dict = get_dictionary(request, class_name)
 
 
     # Запрос к базе данных
     table_data = get_model_name(class_name).objects.filter(**dict)
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
     data = get_table_data(table_structure, table_data)
+    dict_val = list(dict.values())
+    dict_keys = list(dict.keys())
+
+    current_url_broken = current_url.split('&')
+    del current_url_broken[0]
+    del current_url_broken[0]
+    current_url_brokenn = '&'.join(current_url_broken)
 
     return render(request, 'interface/table_view.html', {
-
 
         'filter_fields_labels': filters_by_fields_labels,
         'filters_by_counts_datas': filters_by_counts_datas,
         'off_words': off_words,
-        'dict': dict,
-        'diap': diap,
+        'dict': dict_val,
+        'dict1': dict_keys,
+        # 'diap': diap,
         # 'filter_fields_datas': filters_by_fields_datas,
         # Раздел
         'section': section,
         'section_id': section_id,
         'url': current_url,
+        'url1': current_url_brokenn,
         'arr1': filters[1],
         # 'parse': parse,
 
