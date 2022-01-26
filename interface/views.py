@@ -482,6 +482,24 @@ def get_dictionary(request, class_name):
                 dict[l[i]] = request.GET[l[i]]
     return dict
 
+
+
+def delete(request):
+    record_delete_id = request.GET['record_delete'].split('_')
+    model = request.GET['model']
+    delete = get_model_name(model)(id=int(record_delete_id[0]))
+    delete.is_delete = 1
+    delete.save()
+    return render(request, 'interface/delete.html', {
+        'subsection_id': request.GET['subsection_id'],
+        'section_id':    request.GET['section_id']
+    })
+
+def edit(request):
+    return render(request, 'interface/edit.html', {})
+
+
+
 def table_view(request):
 
     # Достаём имя раздела по идентификатору, указанному в GET параметре
@@ -574,6 +592,7 @@ def table_view(request):
         'table_structure': table_structure,
         # Двумерный массив содержимого
         'data': data,
+        'model': class_name,
         # 'form': form
         # 'file_info': file
     })
