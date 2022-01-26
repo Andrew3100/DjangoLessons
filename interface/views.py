@@ -6,9 +6,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.shortcuts import render
 from django import forms
 from .models import *
-# from .forms import *
 import requests
-
 import pandas as pd
 import matplotlib.pyplot as plt
 from django.urls import resolve
@@ -18,6 +16,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django import *
 import urllib.parse
+
 
 def urlencode(str):
   return urllib.parse.quote(str)
@@ -57,7 +56,6 @@ def get_filters_data(class_name, section, subsection):
         dict[f_d.sql_field_name] = f_d.filter_type
     return dict
 
-
 # Функция создана для того, чтобы вернуть нужное число диапазона при отборе записей в базе данных
 def get_max_value_on_field(model,field,param,request):
     if is_get_param_in_this_url(request.get_full_path_info(), filter_MySQL_field(field)+'___rangestart') == True and '___rangeend' in field == True:
@@ -73,7 +71,6 @@ def get_max_value_on_field(model,field,param,request):
         res = min(dat)
     return res
 
-
 # Функция фильтрует GET-параметры до исходного названия полей в MySQL.
 def filter_MySQL_field(field):
     f = field.split('__')
@@ -81,7 +78,6 @@ def filter_MySQL_field(field):
         return (f[0])
     else:
         return field
-
 
 # Функция создаёт фильтры по полям. Аргумент - массив полей. Возврат - словарь с ключом "описание фильтра", а значением массив данных по полю
 def get_field_filters(model, array, url, request):
@@ -106,7 +102,6 @@ def get_field_filters(model, array, url, request):
         arr1.append((list((arr))))
     return arr1
 
-
 def get_count_filters(model, array, url, request):
     arr1 = []
     for i in range(0, len(array)):
@@ -122,7 +117,6 @@ def get_count_filters(model, array, url, request):
         arr1.append((list((arr))))
     return arr1
 
-
 # Функция формирует имя экземпляра класса (если не понятно, читаем документацию по моделям Django)
 def get_class_name_by_section_subsection(sub_section):
     for sub_s in sub_section:
@@ -132,7 +126,6 @@ def get_class_name_by_section_subsection(sub_section):
         for i in range(0, len(sub_name)):
             class_name = class_name + sub_name[i].title()
     return class_name
-
 
 # Функция создаёт экземпляр по строковому имени класса
 def get_model_name(string):
@@ -173,23 +166,29 @@ def get_model_name(string):
     if string == 'TableZaoch':
         return TableZaoch
 
-
 # Функция формирует двумерный массив данных
-def get_table_data(table_structure, table_data):
+def get_table_data(table_structure, table_data, section_id, subsection_id):
     # Главный массив данных
     full_data = []
+    ids = []
     for table_data1 in table_data:
         # Подчинённый массив данных
         data = []
         # Перебираем структуру таблицы и пытаемся сунуть элементы в свойства объекта.
-        # Благодаря этому можно не делать милиарды лишних шаблоно
+        # Благодаря этому можно не делать милиарды лишних шаблонов
+        ids.append(table_data1.id)
         for table_structure1 in table_structure:
-            # Костыль, позволяющий передать совйство объекта в видк строки
+            # Костыль, позволяющий передать совйство объекта в виде строки
             data.append(table_data1.__getattribute__(table_structure1.sql_field_name))
+        id = str(table_data1.id) + '_id'
+        data.append(id)
+        section_id_str = str(section_id)
+        subsection_id_str = str(subsection_id)
+        id = str(table_data1.id)
+        # data.append(table_data1.id)
         full_data.append(data)
         del data
     return full_data
-
 
 def get_dict_by_GET(request, list_GET):
     dict = {}
@@ -208,11 +207,9 @@ def get_dict_by_GET(request, list_GET):
                 filter_MySQL_field(request.GET[l[i]]))
     return list_GET
 
-
 # Create your views here.
 def header(request):
     return render(request, 'interface/header/header.html')
-
 
 def blocks(request):
     sections = Sections.objects.all()
@@ -222,25 +219,24 @@ def blocks(request):
                   }
                   )
 
-
 def analisys(request):
     return render(request, 'interface/analisys.html')
-
 
 def events(request):
     return render(request, 'interface/events.html')
 
-
 def new_block(request):
     return render(request, 'interface/new_block.html')
-
 
 def reports(request):
     return render(request, 'interface/reports.html')
 
-
 def login(request):
     return render(request, 'interface/login.html')
+
+def delete_record(request,model,id):
+    delete_id
+    return render(request, 'interface/delete.html')
 
 
 def table_list(request):
@@ -543,7 +539,7 @@ def table_view(request):
     # Запрос к базе данных
     table_data = get_model_name(class_name).objects.filter(**dict)
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
-    data = get_table_data(table_structure, table_data)
+    data = get_table_data(table_structure, table_data, section_id, sub_section_id)
     dict_val = list(dict.values())
     dict_keys = list(dict.keys())
 
@@ -551,7 +547,8 @@ def table_view(request):
     del current_url_broken[0]
     del current_url_broken[0]
     current_url_brokenn = '&'.join(current_url_broken)
-
+    edit = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>'
+    delete = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-archive-fill" viewBox="0 0 16 16"><path d="M12.643 15C13.979 15 15 13.845 15 12.5V5H1v7.5C1 13.845 2.021 15 3.357 15h9.286zM5.5 7h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1zM.8 1a.8.8 0 0 0-.8.8V3a.8.8 0 0 0 .8.8h14.4A.8.8 0 0 0 16 3V1.8a.8.8 0 0 0-.8-.8H.8z"/></svg>'
     return render(request, 'interface/table_view.html', {
 
         'filter_fields_labels': filters_by_fields_labels,
@@ -568,7 +565,7 @@ def table_view(request):
         'url1': current_url_brokenn,
         'arr1': filters[1],
         # 'parse': parse,
-
+        'ids': data[1],
         # 'indexes': indexes,
         # Подраздел
         'sub_section': sub_section,
