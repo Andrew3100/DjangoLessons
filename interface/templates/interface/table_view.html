@@ -30,7 +30,7 @@
             <div class="col-3" style="display: flex">
                 <div class="bg-light" style="border-radius: 10px;">
                     <div style="margin: 10px 10px 10px 10px;">
-                    <h5>Импорт записей в таблицу:</h5>
+                        <h5>Массовый импорт записей в таблицу: <a href="/excel?{{ url1 }}&template=1">(скачать шаблон)</a></h5>
                         <form enctype="multipart/form-data" action="/table_view?section={{ section_id }}&sub_section={{ sub_section_id }}" method="POST" class="form-row" style="width: 120px;">
                             {#        Токен для проверки формы - требования джанго        #}
                             {% csrf_token %}
@@ -52,10 +52,18 @@
             </button>
                     <br>
                     <br>
-            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                <span style="color: black;">Показать всю таблицу</span>
-            </button>
-                    <br><p style="margin-top: 5px; color: red">(Возможна длительная загрузка страницы)</p>
+                    <button form="excel" class="btn btn-outline-primary text-center"><span style="color: black">Сохранить в Excel</span></button>
+                    <br>
+                    <br>
+                    <a class="btn btn-outline-secondary" href="table_view?section={{ sub_section_id }}&sub_section={{ sub_section_id }}">Сбросить фильтры</a>
+
+                    {#                    <form method="POST">#}
+{#                    <input type="hidden" value="">#}
+{#            <a href="/table_view?section={{ section_id }}&sub_section={{ sub_section_id }}" class="btn btn-outline-danger">#}
+{#                <span style="color: black;">Показать всю таблицу</span>#}
+{#            </a>#}
+{#                    </form>#}
+{#                    <br><p style="margin-top: 5px; color: red">(Возможна длительная загрузка страницы)</p>#}
             <!-- Модальное окно -->
             <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog">
@@ -80,7 +88,7 @@
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                    <button type="submit" class="btn btn-outline-warning">Сохранить изменения</button>
+                    <button type="submit" class="btn btn-outline-warning">Сохранить запись</button>
                   </form>
                   </div>
                 </div>
@@ -95,25 +103,9 @@
     <br>
 
     <div class="container">
-    <table class="table table-bordered table-danger text-center">
-{#    <div class="row">#}
-{#        <div class="col text-center">#}
-{#            <p>Уберите отдельные поля в заголовке таблицы, если их не нужно включать в отчёт. Система сформирует отчёт, включив те записи, которые есть в этой таблице</p>#}
-{#        </div>#}
-{#    </div>#}
+    <table class="table table-hover table-striped table-light text-center">
 
 
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <button form="excel" class="btn btn-outline-primary text-center"><span style="color: black">Сохранить в Excel</span></button>
-            </div>
-            <div class="col">
-                <p style="text-align: right"><a class="btn btn-outline-secondary" href="table_view?section={{ sub_section_id }}&sub_section={{ sub_section_id }}">Сбросить фильтры</a></p>
-            </div>
-        </div>
-    </div>
-    <br>
 
 <div class="container">
     <div class="row">
@@ -188,7 +180,7 @@
 
         {% for data2 in data1  %}
             {% if 'id' in data2 %}
-                <td>
+                <span><td>
 {#                    {{ data2 }}#}
                     <div class="container">
                         <div class="row">
@@ -200,9 +192,9 @@
 </svg></a></div>
                         </div>
                     </div>
-                </td>
+                </td></span>
             {% else %}
-                <td>{{ data2 }}</td>
+                <span style=""><td>{{ data2 }}</td></span>
             {% endif %}
 
         {% endfor %}

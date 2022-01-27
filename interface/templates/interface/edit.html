@@ -1,0 +1,25 @@
+{% extends 'interface/header/header.html' %}
+{% block tittle %}
+    Обновление записи
+{% endblock %}
+
+{% block main_content %}
+<br>
+<br>
+                {% if post != 'success' %}
+                <form method="POST" style="width: 600px; margin: auto" action="/edit?section_id={{ section_id }}&subsection_id={{ sub_section_id }}&record_edit={{ record_delete_id }}&model={{ model }}&submitted=1">
+                    {% csrf_token %}
+                          {% for i in values %}
+                                <label for="{{ i.1 }}">{{ i.0 }}</label>
+                                <input type="{{ i.2 }}" class="form-control" value="{{ i.3 }}" name="{{ i.1 }}" id="{{ i.1 }}" style="margin-top: 7px;">
+                                <br>
+                          {% endfor %}
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-outline-warning">Сохранить запись</button>
+                </form>
+                {% else %}
+                    <body onload="window.location.href = '/table_view?section={{ section }}&sub_section={{ sub_section_id }}';">
+                {% endif %}
+{% endblock %}
+
+

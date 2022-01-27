@@ -25,6 +25,13 @@ def urlencode(str):
 def urldecode(str):
   return urllib.parse.unquote(str)
 
+# Возврашает интерфейсное имя таблицы по разделу и подразделу
+def get_table_name(subsection):
+    data = Sub_sections.objects.filter(id=subsection)
+    for dat in data:
+        name = dat.interface_name
+    return name
+
 
 # Проверяет, входит ли заданный GET-параметр в URL
 def is_get_param_in_this_url(url, get):
@@ -235,7 +242,7 @@ def login(request):
     return render(request, 'interface/login.html')
 
 def delete_record(request,model,id):
-    delete_id
+    # delete_id
     return render(request, 'interface/delete.html')
 
 
@@ -298,7 +305,7 @@ def add(request):
 
 
 # Загружает файл из папки сохранённых отчётов
-def load_file(path, request):
+def load_file(path, request, filename):
     import xlwt
     import mimetypes
     import os
@@ -396,7 +403,7 @@ def excel_report(request):
     import time as t
     section_id = request.POST['s']
     sub_section_id = request.POST['ss']
-
+    current_url = request.get_full_path_info()
     classname = get_class_name_by_section_subsection(sub_section=Sub_sections.objects.filter(id=sub_section_id))
     model = get_model_name(classname)
     post_array0 = list(request.POST)
@@ -422,40 +429,19 @@ def excel_report(request):
         data_full.append(data)
 
     dictionary = {}
+    if is_get_param_in_this_url(current_url, 'template'):
+        del data_full
     for i in range(0, len(headers)):
         # Тут датафрейм, из которого формируется Excel и сохраняестя на сервер
         dictionary[headers[i]] = data_full[i]
     pandas_DF = pandas.DataFrame(dictionary)
     time_label_filename = t.time()
     save_path = 'interface/reports/'+str(time_label_filename)+'.xlsx'
-    pandas_DF.to_excel(save_path,sheet_name='отчёт', index=False)
+    pandas_DF.to_excel(save_path,sheet_name=get_table_name(sub_section_id), index=False)
     writer = pd.ExcelWriter('test_file.xlsx')
     pandas_DF.to_excel(writer, sheet_name='my_analysis', index=False, na_rep='NaN')
 
-
-    return load_file(save_path, request)
-
-    # f = 'interface/reports/cr2020.xlsx'
-    # response = HttpResponse(content_type='application/ms_excel')
-    # response['Content-Disposition'] = 'attachment; filename=Expenses.xls'
-    # book = xlwt.Workbook(encoding='utf-8')
-    # book1 = book.add_sheet('Expenses')
-    # row_num = 0
-    # font_style = xlwt.XFStyle()
-    # font_style.font.bold = True
-    #
-    # cols = ['1','2','3']
-    #
-    # for col in range(0, len(cols)):
-    #     book1.write(row_num, col, cols[col], font_style)
-    # book.save(response)
-    # return response
-    # return render(request, 'interface/report.html', {
-    #     'post': get_dictionary,
-    #     'pars': merge_data,
-        # 'datas': pandas_DF,
-    #
-    # })
+    return load_file(save_path, request, get_table_name(sub_section_id))
 
 
 def get_diap(data,field,class_name):
@@ -483,20 +469,63 @@ def get_dictionary(request, class_name):
     return dict
 
 
-
+# Скрипт удаления записи обновляет поле is_delete на значение 1
 def delete(request):
+    section_id = request.GET['section_id']
+    sub_section_id = request.GET['subsection_id']
+    get_table_srtructure = Subsections_data.objects.filter(section_id=section_id,subsection_id=sub_section_id)
     record_delete_id = request.GET['record_delete'].split('_')
-    model = request.GET['model']
-    delete = get_model_name(model)(id=int(record_delete_id[0]))
-    delete.is_delete = 1
-    delete.save()
+    delete = get_model_name(request.GET['model']).objects.filter(id=int(record_delete_id[0])).update(is_delete=1)
     return render(request, 'interface/delete.html', {
-        'subsection_id': request.GET['subsection_id'],
-        'section_id':    request.GET['section_id']
+        'subsection_id': section_id,
+        'section_id': sub_section_id
     })
 
 def edit(request):
-    return render(request, 'interface/edit.html', {})
+    section_id = request.GET['section_id']
+    sub_section_id = request.GET['subsection_id']
+    record_delete_id = request.GET['record_edit']
+    current_url = request.get_full_path_info()
+    edit = get_model_name(request.GET['model']).objects.filter(id=int(record_delete_id[0]))
+    if is_get_param_in_this_url(current_url,'submitted') == False:
+        table_structure = Subsections_data.objects.filter(section_id=section_id, subsection_id=sub_section_id)
+        # двумерный массив данных
+
+        dat_full = []
+        data = get_table_data(table_structure, edit, section_id, sub_section_id)
+        i = 0
+        for t in table_structure:
+            dat = []
+            if t.html_descriptor != 'Автор' and t.html_descriptor != 'Год':
+                dat.append(t.html_descriptor)
+                dat.append(t.sql_field_name)
+                dat.append(t.html_form_data_type)
+                dat.append(data[0][i])
+                i = i + 1
+                dat_full.append(dat)
+        return render(request, 'interface/edit.html', {
+            'record_delete_id': record_delete_id,
+            # 'table_structure': get_table_srtructure,
+            'section_id': section_id,
+            'sub_section_id': sub_section_id,
+            'model': request.GET['model'],
+            'values': dat_full,
+        })
+    else:
+        dict = {}
+        post_data = list(request.POST)
+        del post_data[0]
+        for post in post_data:
+            dict[post] = request.POST[post]
+            # dict[post1[0]] = post1[1]
+        delete = get_model_name(request.GET['model']).objects.filter(id=int(record_delete_id[0])).update(**dict)
+        return render(request, 'interface/edit.html', {
+            'section': section_id,
+            'sub_section_id': sub_section_id,
+            'post': 'success'
+        })
+
+
 
 
 
@@ -552,7 +581,7 @@ def table_view(request):
     filters_by_counts_datas = get_count_filters(get_model_name(class_name), filters[1], current_url, request)
 
     dict = get_dictionary(request, class_name)
-
+    dict['is_delete'] = 0
 
     # Запрос к базе данных
     table_data = get_model_name(class_name).objects.filter(**dict)
@@ -583,7 +612,7 @@ def table_view(request):
         'url1': current_url_brokenn,
         'arr1': filters[1],
         # 'parse': parse,
-        'ids': data[1],
+        # 'ids': data[1],
         # 'indexes': indexes,
         # Подраздел
         'sub_section': sub_section,
