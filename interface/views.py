@@ -2,6 +2,7 @@ from django.http import HttpRequest
 from django.http import HttpResponse
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import User, UserModel
 from django.views.generic.detail import SingleObjectMixin
 from django.shortcuts import render
 from django import forms
@@ -590,6 +591,10 @@ def table_view(request):
     dict_val = list(dict.values())
     dict_keys = list(dict.keys())
 
+    current_user = request.user
+
+
+
     current_url_broken = current_url.split('&')
     del current_url_broken[0]
     del current_url_broken[0]
@@ -622,6 +627,7 @@ def table_view(request):
         # Двумерный массив содержимого
         'data': data,
         'model': class_name,
+        'user_mail': current_user.email,
         # 'form': form
         # 'file_info': file
     })
