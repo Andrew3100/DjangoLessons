@@ -21,3 +21,9 @@ urlpatterns = [
     # Отсылка к файлу маршрутов приложения interface
     path('', include('interface.urls'))
 ]
+
+
+#Add Django site authentication urls (for login, logout, password management)
+urlpatterns += [
+    path('accounts/', include('django.contrib.auth.urls')),
+]
