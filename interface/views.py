@@ -217,27 +217,38 @@ def get_dict_by_GET(request, list_GET):
 
 # Create your views here.
 def header(request):
-    return render(request, 'interface/header/header.html')
+    return render(request, 'interface/header/header.html', {
+        'username': request.user.first_name
+    })
 
 def blocks(request):
     sections = Sections.objects.all()
     return render(request, 'interface/blocks.html',
                   {
-                      'sections': sections
+                      'sections': sections,
+                      'username': request.user.first_name
                   }
                   )
 
 def analisys(request):
-    return render(request, 'interface/analisys.html')
+    return render(request, 'interface/analisys.html',{
+        'username': request.user.first_name
+    })
 
 def events(request):
-    return render(request, 'interface/events.html')
+    return render(request, 'interface/events.html', {
+        'username': request.user.first_name
+    })
 
 def new_block(request):
-    return render(request, 'interface/new_block.html')
+    return render(request, 'interface/new_block.html', {
+        'username': request.user.first_name
+    })
 
 def reports(request):
-    return render(request, 'interface/reports.html')
+    return render(request, 'interface/reports.html', {
+        'username': request.user.first_name
+    })
 
 def login(request):
     return render(request, 'interface/login.html')
@@ -627,7 +638,7 @@ def table_view(request):
         # Двумерный массив содержимого
         'data': data,
         'model': class_name,
-        'user_mail': current_user.email,
+        'username': current_user.first_name,
         # 'form': form
         # 'file_info': file
     })
@@ -671,7 +682,7 @@ def upload_file(request, sub_section):
                 if data.html_descriptor != 'Автор' and data.html_descriptor != 'Год':
                     dict_save[data.sql_field_name] = file[data.html_descriptor][i]
             dict_save['year_load'] = 2020
-            dict_save['author'] = 'Andre'
+            dict_save['author'] = request.user.first_name
             dict_save['is_delete'] = 0
             array_dicts.append(dict_save)
 
