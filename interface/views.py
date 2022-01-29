@@ -186,8 +186,12 @@ def get_table_data(table_structure, table_data, section_id, subsection_id):
         # Благодаря этому можно не делать милиарды лишних шаблонов
         ids.append(table_data1.id)
         for table_structure1 in table_structure:
-            # Костыль, позволяющий передать совйство объекта в виде строки
-            data.append(table_data1.__getattribute__(table_structure1.sql_field_name))
+            # Метод, позволяющий передать совйство объекта в виде строки
+            if table_structure1.html_form_data_type == 'date':
+                data.append(get_date_from_timestamp(str(table_data1.__getattribute__(table_structure1.sql_field_name))))
+            else:
+                data.append(table_data1.__getattribute__(table_structure1.sql_field_name))
+
         id = str(table_data1.id) + '_id'
         data.append(id)
         section_id_str = str(section_id)
@@ -262,10 +266,13 @@ def table_list(request):
     subsections = Sub_sections.objects.all()
     sections = Sections.objects.all()
     url = request.GET['block']
+
     return render(request, 'interface/table_list.html',
                   {
                       'sub': subsections,
                       'seс': sections,
+
+                      'username': request.user.first_name,
                       'url': int(url),
                       'url1': url
                   }
@@ -299,7 +306,11 @@ def add(request):
         # Исключаем служебные поля из форм, так как они не заполняются
         if table_structure1.sql_field_name != 'year_load' and table_structure1.sql_field_name != 'author':
             # Собираем посты и запаковываем их в словарь
-            posts_names_dict[table_structure1.sql_field_name] = request.POST[table_structure1.sql_field_name]
+            if table_structure1.html_form_data_type == 'date':
+                posts_names_dict[table_structure1.sql_field_name] = get_timestamp_from_date(str(request.POST[table_structure1.sql_field_name]))
+            else:
+                posts_names_dict[table_structure1.sql_field_name] = request.POST[table_structure1.sql_field_name]
+
     posts_names_dict['year_load'] = 2020;
     posts_names_dict['author'] = 'Funikov';
     posts_names_dict['is_delete'] = 0;
@@ -445,7 +456,13 @@ def excel_report(request):
         del data_full
     for i in range(0, len(headers)):
         # Тут датафрейм, из которого формируется Excel и сохраняестя на сервер
-        dictionary[headers[i]] = data_full[i]
+        if headers[i] in ['Дата начала','Дата окончания','Дата начала практики','Дата окончания практики','Начало реализации','Окончание реализации','Дата Заключения','Срок действия','Дата заключения договора']:
+            times = []
+            for dick in data_full[i]:
+                times.append(get_date_from_timestamp(int(dick)))
+            dictionary[headers[i]] = times
+        else:
+            dictionary[headers[i]] = data_full[i]
     pandas_DF = pandas.DataFrame(dictionary)
     time_label_filename = t.time()
     save_path = 'interface/reports/'+str(time_label_filename)+'.xlsx'
@@ -541,6 +558,17 @@ def edit(request):
 
 
 
+def get_date_from_timestamp(timestamp):
+    from datetime import datetime
+    # Прибавили сутки в секундах, так как почему-то библиотека datetime отнимает сутки от метки timestamp
+    date = datetime.utcfromtimestamp(int(timestamp)+86400).strftime('%d-%m-%Y')
+    return date
+
+def get_timestamp_from_date(date):
+    from dateutil import parser
+    timestamp = parser.parse(date).timestamp()
+    return int(timestamp)
+
 def table_view(request):
 
     # Достаём имя раздела по идентификатору, указанному в GET параметре
@@ -606,6 +634,7 @@ def table_view(request):
 
 
 
+
     current_url_broken = current_url.split('&')
     del current_url_broken[0]
     del current_url_broken[0]
@@ -637,6 +666,7 @@ def table_view(request):
         'table_structure': table_structure,
         # Двумерный массив содержимого
         'data': data,
+
         'model': class_name,
         'username': current_user.first_name,
         # 'form': form
@@ -664,6 +694,7 @@ def upload_file(request, sub_section):
         # Если заголовки базы не совпадают с теми, которые загрузил юзер - заг ружен неверный файл
         if file_headers != database_headers:
             log_message = 'Для данной таблицы выгруженный файл не подходит. Повторите попытку импорта'
+            log_message = str(file_headers) +'       '+ str(database_headers)
             return log_message
 
         lens = GetCountriesList(request)
@@ -680,7 +711,12 @@ def upload_file(request, sub_section):
             dict_save = {}
             for data in datas:
                 if data.html_descriptor != 'Автор' and data.html_descriptor != 'Год':
-                    dict_save[data.sql_field_name] = file[data.html_descriptor][i]
+                    # Если попадается поле с датой
+                    if data.html_form_data_type == 'date':
+                        # переводим дату в таймстамп
+                        dict_save[data.sql_field_name] = get_timestamp_from_date(str(file[data.html_descriptor][i]))
+                    else:
+                        dict_save[data.sql_field_name] = file[data.html_descriptor][i]
             dict_save['year_load'] = 2020
             dict_save['author'] = request.user.first_name
             dict_save['is_delete'] = 0

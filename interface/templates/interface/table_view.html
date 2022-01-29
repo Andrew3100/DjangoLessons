@@ -105,10 +105,11 @@
     <br>
 
     <div class="container">
-    <table class="table table-hover table-striped table-light text-center">
 
 
 
+<br>
+<br>
 <div class="container">
     <div class="row">
         <div class="col-6">
@@ -156,9 +157,20 @@
 
 {#{{ data }}#}
 
+    {{ time }}
 
+<div class="row">
+    <div class="col"><input type="date" id="date_1"
+                            class="form-control"
+                            onfocusout='' style="width: 150px; margin-left: 75%;"></div>
 
+    <div class="col"><input type="date" id="date_2"
+                            class="form-control"
+                            onfocusout='if (document.getElementById(`date_2`).value == ``) {
+                            exit();}; window.location.href=`{{ url }}&{{ counts.1 }}__range=${document.getElementById(`{{ counts.1 }}_id`).value}`' style="width: 150px;"></div>
+</div>
 
+<table class="table table-hover table-striped table-light text-center">
 <form id="excel" method="POST" action="/excel?{{ url1 }}">
 {% csrf_token %}
 

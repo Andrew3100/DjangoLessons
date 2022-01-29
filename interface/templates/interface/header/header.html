@@ -28,36 +28,31 @@
                <h5>Вы зашли под именем: <b>{{ username }}</b><a href="{% url 'logout'%}" style="text-decoration: none"> (Выход)</a></h5>
            </div>
        </div>
-      <header class="blog-header py-3">
-        <div class="row flex-nowrap justify-content-between align-items-center">
-          <div class="col-6">
-
-          </div>
-
-        </div>
-      </header>
-  <br>
-    <div class="container">
-  <div class="nav-scroller py-1 mb-2">
-    <nav class="nav justify-content-between">
-      <a class="p-2 link-secondary text-center" href="/blocks">Главная</a>
-      <a class="p-2 link-secondary text-center" href="/analisys">Статистика</a>
-      <a class="p-2 link-secondary text-center" href="/events">События</a>
-      <a class="p-2 link-secondary text-center" href="/reports">Отчёты</a>
-    </nav>
-  </div>
-    </div>
-    </div>
-        <div class="container">
+            <br>
+       <div class="row">
+            <div class="nav-scroller py-1 mb-2">
+                <nav class="nav justify-content-between">
+                  <a class="p-2 link-secondary text-center" href="/blocks">Разделы</a>
+                  <a class="p-2 link-secondary text-center" href="/analisys">Статистика</a>
+                  <a class="p-2 link-secondary text-center" href="/events">События</a>
+                  <a class="p-2 link-secondary text-center" href="/reports">История отчётов</a>
+                </nav>
+            </div>
+       </div>
+            <br>
+       <div class="row">
             {% block crumbs %}
 
             {% endblock %}
-        </div>
-        <div class="container">
+       </div>
+            <br>
+       <div class="row">
             {% block main_content %}
 
             {% endblock %}
-        </div>
+       </div>
+   </div>
+
 
 
 
