@@ -1,5 +1,39 @@
 
-{% extends 'interface/header/header.html' %}
+    {% extends 'interface/header/header.html' %}
+<script>
+
+    function toTimestamp(strDate){
+        let datum = Date.parse(strDate);
+        return datum/1000;
+    }
+
+    function func(filters_dates) {
+        let date1 = document.getElementById('date_1').value;
+        let date2 = document.getElementById('date_2').value;
+        let start = ''
+        let end = ''
+        if (!date1) {
+          start = start + filters_dates[2];
+        }
+        else
+        {
+          start = start + toTimestamp(date1);
+        }
+
+        if (!date2) {
+          end = end + filters_dates[1];
+        }
+        else
+        {
+          end = end + toTimestamp(date2);
+        }
+        let ret = start + '-' + end;
+        return ret;
+
+    }
+
+</script>
+
 {% block tittle %}
     Главный интерфейс
 {% endblock %}
@@ -21,10 +55,11 @@
     </div>
 {% endblock %}
 
+
+
 {% block main_content %}
 
-    {{ user_mail }}
-
+    {{ filters_dates }}
     <br>
     <br>
     <div class="container">
@@ -57,7 +92,7 @@
                     <button form="excel" class="btn btn-outline-primary text-center"><span style="color: black">Сохранить в Excel</span></button>
                     <br>
                     <br>
-                    <a class="btn btn-outline-secondary" href="table_view?section={{ sub_section_id }}&sub_section={{ sub_section_id }}">Сбросить фильтры</a>
+                    <a class="btn btn-outline-secondary" href="table_view?section={{ section_id }}&sub_section={{ sub_section_id }}">Сбросить фильтры</a>
 
                     {#                    <form method="POST">#}
 {#                    <input type="hidden" value="">#}
@@ -106,7 +141,7 @@
 
     <div class="container">
 
-
+{{ filters_dates1 }}
 
 <br>
 <br>
@@ -155,22 +190,98 @@
     </div>
 </div>
 
-{#{{ data }}#}
-
-    {{ time }}
 
 <div class="row">
     <div class="col"><input type="date" id="date_1"
-                            class="form-control"
-                            onfocusout='' style="width: 150px; margin-left: 75%;"></div>
+                            class="form-control" {% comment %}value="2018-07-22"{% endcomment %}
+                            onfocusout='
+
+                            function toTimestamp(strDate){
+        let datum = Date.parse(strDate);
+        return datum/1000;
+    };
+
+            function func(filters_dates,date_id) {
+        let date1 = document.getElementById(`date_1`).value;
+        let date2 = document.getElementById(`date_2`).value;
+        let start = `минет`
+        let end = ``
+
+        if (date_id == 2) {
+            if (!date1) {
+                start = start + filters_dates[2];
+        }
+            else
+            {
+                start = start + toTimestamp(date1);
+            }
+        }
+
+        else {
+
+        if (!date2) {
+          end = end + filters_dates[1];
+        }
+        else
+        {
+          end = end + toTimestamp(date2);
+        }
+        let ret = start + `-` + end;
+        return ret;
+
+        }
+
+    }
+
+                            ;let f = func({{ filters_dates }},1); window.location.href=`{{ url }}&{{ filters_dates1.1 }}__range=${f}`
+' style="width: 150px; margin-left: 75%;"></div>
 
     <div class="col"><input type="date" id="date_2"
                             class="form-control"
-                            onfocusout='if (document.getElementById(`date_2`).value == ``) {
-                            exit();}; window.location.href=`{{ url }}&{{ counts.1 }}__range=${document.getElementById(`{{ counts.1 }}_id`).value}`' style="width: 150px;"></div>
+                            onfocusout='
+                            function toTimestamp(strDate){
+        let datum = Date.parse(strDate);
+        return datum/1000;
+    };
+
+            function func(filters_dates,date_id) {
+        let date1 = document.getElementById(`date_1`).value;
+        let date2 = document.getElementById(`date_2`).value;
+        let start = ``
+        let end = ``
+
+        if (date_id == 2) {
+            if (!date1) {
+                start = start + filters_dates[2];
+        }
+            else
+            {
+                start = start + toTimestamp(date1);
+            }
+        }
+
+        else {
+
+        if (!date2) {
+          end = end + filters_dates[1];
+        }
+        else
+        {
+          end = end + toTimestamp(date2);
+        }
+        let ret = start + `-` + end;
+        return ret;
+
+        }
+
+    }
+
+                            ;let f1 = func({{ filters_dates }},2); window.location.href=`{{ url }}&{{ filters_dates1.1 }}__range=${f1}`' style="width: 150px;">
+    </div>
 </div>
 
-<table class="table table-hover table-striped table-light text-center">
+{% comment %}window.location.href=`{{ url }}&{{ filters_dates.1 }}__daterange=${document.getElementById(`date_2`).value}`{% endcomment %}
+        <table class="table table-hover table-striped table-light text-center">
 <form id="excel" method="POST" action="/excel?{{ url1 }}">
 {% csrf_token %}
 
