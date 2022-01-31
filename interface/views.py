@@ -316,7 +316,7 @@ def insert_log(event,model,request,section,subsection):
     log_dict = {}
     log_dict['timestamp_label'] = str(int(t.time()))
     log_dict['author'] = request.user.first_name
-    log_dict['event'] = 'Вставка записи через форму'
+    log_dict['event'] = event
     log_dict['is_delete'] = 0
     log_dict['subsection_id'] = subsection
     log_dict['section_id'] = section
@@ -363,7 +363,7 @@ def add(request):
     # Аргумент с двумя звёздочками - распаковка словаря обрабатываесых данных
     # За счёт него можно передавать сколько угодно значений, а не фиксированное количество
     save = get_model_name(class_name)(**posts_names_dict).save()
-    log = insert_log('Вставка записи', class_name,request,section,sub_section)
+    log = insert_log('Вставка записи', class_name,request,request.GET['section'],request.GET['sub_section'])
     # Текст урл для редиректа
     new_url = '/table_view?section=' + str(request.GET['section']) + '&sub_section=' + str(request.GET['sub_section'])
 
@@ -388,7 +388,7 @@ def load_file(path, request, filename,label):
         file_type = 'application/octet-stream'
     response['Content-Type'] = file_type
     response['Content-Length'] = str(os.stat(path).st_size)
-    response['Content-Disposition'] = "attachment; filename=label%s.xlsx"
+    response['Content-Disposition'] = "attachment; filename=Report.xlsx"
     return response
 
 
@@ -517,8 +517,8 @@ def excel_report(request):
     save_path = 'interface/reports/'+str(time_label_filename)+'.xlsx'
     pandas_DF.to_excel(save_path,sheet_name=get_table_name(sub_section_id), index=False)
     writer = pd.ExcelWriter('test_file.xlsx')
-    pandas_DF.to_excel(writer, sheet_name='my_analysis', index=False, na_rep='NaN')
-
+    pandas_DF.to_excel(writer, sheet_name='myanalysis', index=False, na_rep='NaN')
+    log = insert_log('Загрузка отчёта', classname, request, section_id, sub_section_id)
     return load_file(save_path, request, get_table_name(sub_section_id),time_label_filename)
 
 
@@ -554,9 +554,10 @@ def delete(request):
     get_table_srtructure = Subsections_data.objects.filter(section_id=section_id,subsection_id=sub_section_id)
     record_delete_id = request.GET['record_delete'].split('_')
     delete = get_model_name(request.GET['model']).objects.filter(id=int(record_delete_id[0])).update(is_delete=1)
+    log = insert_log('Удаление записи с идентификатором ' + str(record_delete_id[0]),request.GET['model'],request,section_id,sub_section_id)
     return render(request, 'interface/delete.html', {
-        'subsection_id': section_id,
-        'section_id': sub_section_id
+        'subsection_id': sub_section_id,
+        'section_id': section_id
     })
 
 def edit(request):
@@ -581,6 +582,7 @@ def edit(request):
                 dat.append(data[0][i])
                 i = i + 1
                 dat_full.append(dat)
+        insert_log('Редактирование записи с идентификатором '+str(record_delete_id[0]),request.GET['model'],request,section_id,sub_section_id)
         return render(request, 'interface/edit.html', {
             'record_delete_id': record_delete_id,
             # 'table_structure': get_table_srtructure,
@@ -634,7 +636,12 @@ def get_timestamp_from_date(date):
     return int(timestamp)
 
 def table_view(request):
-
+    # Редирект, на случай если кто-то додумается до очистки куков
+    try:
+        username = request.user.first_name
+    except AttributeError:
+        username = None
+        return render(request, 'interface/header/redirect.html')
     # Достаём имя раздела по идентификатору, указанному в GET параметре
     section_id = request.GET['section']
     sub_section_id = request.GET['sub_section']
@@ -781,7 +788,7 @@ def upload_file(request, sub_section):
         # Если заголовки базы не совпадают с теми, которые загрузил юзер - заг ружен неверный файл
         if file_headers != database_headers:
             log_message = 'Для данной таблицы выгруженный файл не подходит. Повторите попытку импорта'
-            log_message = str(file_headers) +'       '+ str(database_headers)
+            insert_log('Несопоставимый файл',get_class_name_by_section_subsection(sub_section),request,section_id,sub_section_id)
             return log_message
 
         lens = GetCountriesList(request)
@@ -793,6 +800,8 @@ def upload_file(request, sub_section):
                 country = file['Страна прибытия'][i]
                 if country not in list(lens.keys()):
                     log = 'В строке ' + str(i + 2) + 'файла Excel найдена ошибка в наименовании страны. Исправьте её и повторите импорт снова.'
+                    insert_log('Ошибка в наименовании страны', get_class_name_by_section_subsection(sub_section), request,
+                               section_id, sub_section_id)
                     return log
             # Словарь для записи
             dict_save = {}
@@ -816,6 +825,8 @@ def upload_file(request, sub_section):
             # Вставка словаря при помощи распаковки словаря аргументов **kwargs. Документация
             model(**dict).save()
         log = "Импорт записей произведён успешно"
+        insert_log('Успешный импорт', get_class_name_by_section_subsection(sub_section), request, section_id,
+                   sub_section_id)
         return log
 
 
