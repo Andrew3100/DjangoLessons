@@ -320,8 +320,8 @@ def insert_log(event,model,request,section,subsection):
     log_dict['is_delete'] = 0
     log_dict['subsection_id'] = subsection
     log_dict['section_id'] = section
-    get_model_name(model)(**log_dict).save()
-    return section_data
+    save = DjangoLogs(**log_dict).save()
+    return save
 
 def get_a_set_of_filters(filters):
     filters_types = list(filters.values())
