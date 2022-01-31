@@ -9,7 +9,7 @@
     {% for r in seс %}
         {% if r.id == url %}
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb"><li class="breadcrumb-item"><a href="#">Главная</a></li>
+            <ol class="breadcrumb"><li class="breadcrumb-item"><a href="/blocks">Разделы</a></li>
                 <li class="breadcrumb-item active" aria-current="page">
                     <a href="/table?block={{ r.id }}">{{ r.interface_name }}</a>
                 </li>

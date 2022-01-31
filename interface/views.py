@@ -9,6 +9,7 @@ from django import forms
 from .models import *
 import requests
 import pandas as pd
+from datetime import datetime
 import matplotlib.pyplot as plt
 from django.urls import resolve
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -17,6 +18,8 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django import *
 import urllib.parse
+import pandas
+import time as t
 
 
 def urlencode(str):
@@ -175,7 +178,7 @@ def get_model_name(string):
         return TableZaoch
 
 # Функция формирует двумерный массив данных
-def get_table_data(table_structure, table_data, section_id, subsection_id):
+def get_table_data(table_structure, table_data, section_id, subsection_id, request):
     # Главный массив данных
     full_data = []
     ids = []
@@ -192,7 +195,12 @@ def get_table_data(table_structure, table_data, section_id, subsection_id):
             else:
                 data.append(table_data1.__getattribute__(table_structure1.sql_field_name))
 
-        id = str(table_data1.id) + '_id'
+        if table_data1.author == request.user.first_name:
+            auth_label = '_isauth'
+        else:
+            auth_label = ''
+
+        id = str(table_data1.id) + '_id' + auth_label
         data.append(id)
         section_id_str = str(section_id)
         subsection_id_str = str(subsection_id)
@@ -219,13 +227,27 @@ def get_dict_by_GET(request, list_GET):
                 filter_MySQL_field(request.GET[l[i]]))
     return list_GET
 
+
+# Функция перехватывает ошибку авторизации
+
+
 # Create your views here.
 def header(request):
+    try:
+        username = request.user.first_name
+    except AttributeError:
+        username = None
+        return render(request, 'interface/header/redirect.html')
     return render(request, 'interface/header/header.html', {
-        'username': request.user.first_name
+        'username': request.user.first_name,
     })
 
 def blocks(request):
+    try:
+        username = request.user.first_name
+    except AttributeError:
+        username = None
+        return render(request, 'interface/header/redirect.html')
     sections = Sections.objects.all()
     return render(request, 'interface/blocks.html',
                   {
@@ -235,21 +257,32 @@ def blocks(request):
                   )
 
 def analisys(request):
+    try:
+        username = request.user.first_name
+    except AttributeError:
+        username = None
+        return render(request, 'interface/header/redirect.html')
     return render(request, 'interface/analisys.html',{
         'username': request.user.first_name
     })
 
 def events(request):
+    try:
+        username = request.user.first_name
+    except AttributeError:
+        username = None
+        return render(request, 'interface/header/redirect.html')
     return render(request, 'interface/events.html', {
         'username': request.user.first_name
     })
 
-def new_block(request):
-    return render(request, 'interface/new_block.html', {
-        'username': request.user.first_name
-    })
 
 def reports(request):
+    try:
+        username = request.user.first_name
+    except AttributeError:
+        username = None
+        return render(request, 'interface/header/redirect.html')
     return render(request, 'interface/reports.html', {
         'username': request.user.first_name
     })
@@ -271,13 +304,24 @@ def table_list(request):
                   {
                       'sub': subsections,
                       'seс': sections,
-
                       'username': request.user.first_name,
                       'url': int(url),
                       'url1': url
                   }
                   )
 
+
+# Вставка лога по имени события
+def insert_log(event,model,request,section,subsection):
+    log_dict = {}
+    log_dict['timestamp_label'] = str(int(t.time()))
+    log_dict['author'] = request.user.first_name
+    log_dict['event'] = 'Вставка записи через форму'
+    log_dict['is_delete'] = 0
+    log_dict['subsection_id'] = subsection
+    log_dict['section_id'] = section
+    get_model_name(model)(**log_dict).save()
+    return section_data
 
 def get_a_set_of_filters(filters):
     filters_types = list(filters.values())
@@ -312,23 +356,25 @@ def add(request):
                 posts_names_dict[table_structure1.sql_field_name] = request.POST[table_structure1.sql_field_name]
 
     posts_names_dict['year_load'] = 2020;
-    posts_names_dict['author'] = 'Funikov';
+    posts_names_dict['author'] = request.user.first_name;
     posts_names_dict['is_delete'] = 0;
     # Формируем имя создаваемого экземпляра
     class_name = get_class_name_by_section_subsection(sub_section)
     # Аргумент с двумя звёздочками - распаковка словаря обрабатываесых данных
     # За счёт него можно передавать сколько угодно значений, а не фиксированное количество
     save = get_model_name(class_name)(**posts_names_dict).save()
+    log = insert_log('Вставка записи', class_name,request,section,sub_section)
     # Текст урл для редиректа
     new_url = '/table_view?section=' + str(request.GET['section']) + '&sub_section=' + str(request.GET['sub_section'])
 
     return render(request, 'interface/add.html', {
-        'url': new_url
+        'url': new_url,
+        # 'log': log
     })
 
 
 # Загружает файл из папки сохранённых отчётов
-def load_file(path, request, filename):
+def load_file(path, request, filename,label):
     import xlwt
     import mimetypes
     import os
@@ -342,7 +388,7 @@ def load_file(path, request, filename):
         file_type = 'application/octet-stream'
     response['Content-Type'] = file_type
     response['Content-Length'] = str(os.stat(path).st_size)
-    response['Content-Disposition'] = "attachment; filename=report.xlsx"
+    response['Content-Disposition'] = "attachment; filename=label%s.xlsx"
     return response
 
 
@@ -386,12 +432,16 @@ def GET_dictionary(url):
 def get_min_or_max(param,field,model):
     datas = model.objects.filter(is_delete=0)
     maxs = []
+    if len(datas) == 0:
+        return False
     for data in datas:
         maxs.append(int(data.__getattribute__(field)))
     if param == 'min':
         return min(list(set(maxs)))
+        # return datas
     else:
         return max(list(set(maxs)))
+        # return datas
 
 
 def merge_range_data(dictionary, model):
@@ -422,8 +472,7 @@ def merge_range_data(dictionary, model):
 
 
 def excel_report(request):
-    import pandas
-    import time as t
+
     section_id = request.POST['s']
     sub_section_id = request.POST['ss']
     current_url = request.get_full_path_info()
@@ -464,13 +513,13 @@ def excel_report(request):
         else:
             dictionary[headers[i]] = data_full[i]
     pandas_DF = pandas.DataFrame(dictionary)
-    time_label_filename = t.time()
+    time_label_filename = str(int(t.time())) +'_'+ str(request.user.first_name)
     save_path = 'interface/reports/'+str(time_label_filename)+'.xlsx'
     pandas_DF.to_excel(save_path,sheet_name=get_table_name(sub_section_id), index=False)
     writer = pd.ExcelWriter('test_file.xlsx')
     pandas_DF.to_excel(writer, sheet_name='my_analysis', index=False, na_rep='NaN')
 
-    return load_file(save_path, request, get_table_name(sub_section_id))
+    return load_file(save_path, request, get_table_name(sub_section_id),time_label_filename)
 
 
 def get_diap(data,field,class_name):
@@ -521,7 +570,7 @@ def edit(request):
         # двумерный массив данных
 
         dat_full = []
-        data = get_table_data(table_structure, edit, section_id, sub_section_id)
+        data = get_table_data(table_structure, edit, section_id, sub_section_id,request)
         i = 0
         for t in table_structure:
             dat = []
@@ -555,8 +604,23 @@ def edit(request):
         })
 
 
+def get_format_date(request, filters):
+    current_url = (request.get_full_path_info())
+    date1_value = ''
+    date2_value = ''
+    if filters[2] != []:
+        if is_get_param_in_this_url(current_url, filters[2][0] + '__range'):
+            date1_value = get_date_from_timestamp(request.GET[filters[2][0] + '__range'].split('-')[0])
+            date1_value_array = date1_value.split('-')
+            date1_value = date1_value_array[2] + '-' + date1_value_array[1] + '-' + date1_value_array[0]
 
-
+        if is_get_param_in_this_url(current_url, filters[2][1] + '__range'):
+            date2_value = get_date_from_timestamp(request.GET[filters[2][1] + '__range'].split('-')[1])
+            date2_value_array = date2_value.split('-')
+            date2_value = date2_value_array[2] + '-' + date2_value_array[1] + '-' + date2_value_array[0]
+        return date1_value, date2_value
+    else:
+        return False
 
 def get_date_from_timestamp(timestamp):
     from datetime import datetime
@@ -625,25 +689,39 @@ def table_view(request):
 
     # Запрос к базе данных
     table_data = get_model_name(class_name).objects.filter(**dict)
+    if len(table_data) == 0:
+        count = 0
+    else:
+        count = 1
     # Обращаемся к функции получения данных и получаем в ответ двумерный массив
-    data = get_table_data(table_structure, table_data, section_id, sub_section_id)
+    data = get_table_data(table_structure, table_data, section_id, sub_section_id,request)
     dict_val = list(dict.values())
     dict_keys = list(dict.keys())
 
     current_user = request.user
+    dates_value_for_HTML_form = get_format_date(request,filters)
+    if dates_value_for_HTML_form == False:
+        dates1 = ''
+        dates2 = ''
+    else:
+        dates1 = dates_value_for_HTML_form[0]
+        dates2 = dates_value_for_HTML_form[1]
 
     min_max_dates_array = []
-    if filters[2] != []:
+    if len(filters[2]) > 0 and get_min_or_max('max',filters[2][0],get_model_name(class_name)) != False:
         min_max_dates_array.append(get_min_or_max('max',filters[2][0],get_model_name(class_name)))
         min_max_dates_array.append(get_min_or_max('max',filters[2][1],get_model_name(class_name)))
         min_max_dates_array.append(get_min_or_max('min',filters[2][0],get_model_name(class_name)))
         min_max_dates_array.append(get_min_or_max('min',filters[2][1],get_model_name(class_name)))
-
-
+    if len(min_max_dates_array) > 0:
+        dates_isset = 1
+    else:
+        dates_isset = 0
     current_url_broken = current_url.split('&')
     del current_url_broken[0]
     del current_url_broken[0]
     current_url_brokenn = '&'.join(current_url_broken)
+
 
     return render(request, 'interface/table_view.html', {
 
@@ -674,8 +752,12 @@ def table_view(request):
         'filters_dates1': filters[2],
         'model': class_name,
         'username': current_user.first_name,
-        # 'form': form
-        # 'file_info': file
+        'date1_value': dates1,
+        'date2_value': dates2,
+        # Метка для вывода диапазона дат
+        'dates_isset': dates_isset,
+        # Метка наличия записей
+        'count': count,
     })
 
 

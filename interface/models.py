@@ -357,6 +357,7 @@ class TableZaoch(models.Model):
         verbose_name = 'Заочная форма обучения'
         verbose_name_plural = 'Заочная форма обучения'
 
+
 class RefCountry(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)
     fullname = models.CharField(max_length=255, blank=True, null=True)
@@ -364,3 +365,16 @@ class RefCountry(models.Model):
     class Meta:
         managed = True
         db_table = 'ref_country'
+
+
+class DjangoLogs(models.Model):
+    timestamp_label = models.CharField(max_length=45, blank=True, null=True)
+    author = models.TextField(blank=True, null=True)
+    event = models.TextField(blank=True, null=True)
+    section_id = models.IntegerField(blank=True, null=True)
+    subsection_id = models.IntegerField(blank=True, null=True)
+    is_delete = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'django_logs'

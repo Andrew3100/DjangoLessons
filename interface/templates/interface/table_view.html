@@ -1,38 +1,6 @@
 
     {% extends 'interface/header/header.html' %}
-<script>
 
-    function toTimestamp(strDate){
-        let datum = Date.parse(strDate);
-        return datum/1000;
-    }
-
-    function func(filters_dates) {
-        let date1 = document.getElementById('date_1').value;
-        let date2 = document.getElementById('date_2').value;
-        let start = ''
-        let end = ''
-        if (!date1) {
-          start = start + filters_dates[2];
-        }
-        else
-        {
-          start = start + toTimestamp(date1);
-        }
-
-        if (!date2) {
-          end = end + filters_dates[1];
-        }
-        else
-        {
-          end = end + toTimestamp(date2);
-        }
-        let ret = start + '-' + end;
-        return ret;
-
-    }
-
-</script>
 
 {% block tittle %}
     Главный интерфейс
@@ -42,7 +10,7 @@
     <br>
     <div class="container">
         <nav aria-label="breadcrumb">
-                <ol class="breadcrumb"><li class="breadcrumb-item"><a href="#">Главная</a>
+                <ol class="breadcrumb"><li class="breadcrumb-item"><a href="/blocks">Разделы</a>
                     {% comment %}<li class="breadcrumb-item active" aria-current="page">{% endcomment %}<a href="/table?block={{ r.id }}">{{ r.interface_name }}</a></li>
                     {% for s in section %}
                         <li class="breadcrumb-item active" aria-current="page"><a href="/blocks">{{ s.interface_name }}</a></li>
@@ -59,7 +27,6 @@
 
 {% block main_content %}
 
-    {{ filters_dates }}
     <br>
     <br>
     <div class="container">
@@ -141,7 +108,8 @@
 
     <div class="container">
 
-{{ filters_dates1 }}
+{% if count == 1 %}
+
 
 <br>
 <br>
@@ -190,96 +158,105 @@
     </div>
 </div>
 
+{% if dates_isset != 0 %}
+    <div class="row">
+        <div class="col text-center">
+            <b>Для выбора записей определённого периода укажите диапазон дат</b>
+        </div>
+    </div>
+    <br>
+        <div class="row">
+        <div class="col">
+            <label style="margin-left: 75%;" for="date_1" class="form-label">В период с:</label>
+        </div>
+        <div class="col">
+            <label for="date_1" class="form-label">В период по:</label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
 
-<div class="row">
-    <div class="col"><input type="date" id="date_1"
-                            class="form-control" {% comment %}value="2018-07-22"{% endcomment %}
-                            onfocusout='
 
-                            function toTimestamp(strDate){
-        let datum = Date.parse(strDate);
-        return datum/1000;
-    };
-
-            function func(filters_dates,date_id) {
-        let date1 = document.getElementById(`date_1`).value;
-        let date2 = document.getElementById(`date_2`).value;
-        let start = `минет`
-        let end = ``
-
-        if (date_id == 2) {
-            if (!date1) {
-                start = start + filters_dates[2];
-        }
-            else
-            {
-                start = start + toTimestamp(date1);
-            }
-        }
-
-        else {
-
-        if (!date2) {
-          end = end + filters_dates[1];
-        }
-        else
-        {
-          end = end + toTimestamp(date2);
-        }
-        let ret = start + `-` + end;
-        return ret;
-
-        }
-
-    }
-
-                            ;let f = func({{ filters_dates }},1); window.location.href=`{{ url }}&{{ filters_dates1.1 }}__range=${f}`
-' style="width: 150px; margin-left: 75%;"></div>
-
-    <div class="col"><input type="date" id="date_2"
+            <input type="date" id="date_1" value="{{ date1_value }}"
                             class="form-control"
                             onfocusout='
-                            function toTimestamp(strDate){
+    function toTimestamp(strDate){
         let datum = Date.parse(strDate);
-        return datum/1000;
-    };
-
-            function func(filters_dates,date_id) {
+        return (datum/1000) - 10800;
+    }
+    function func(filters_dates) {
         let date1 = document.getElementById(`date_1`).value;
         let date2 = document.getElementById(`date_2`).value;
         let start = ``
         let end = ``
-
-        if (date_id == 2) {
-            if (!date1) {
-                start = start + filters_dates[2];
+        if (!date1 || date2) {
+          start = start + filters_dates[2] +`-`+ toTimestamp(date2);
+          return start;
         }
-            else
-            {
-                start = start + toTimestamp(date1);
-            }
+        if (!date2 || date1) {
+          start = start + toTimestamp(date1) +`-`+ filters_dates[1];
+          return start;
         }
-
-        else {
-
-        if (!date2) {
-          end = end + filters_dates[1];
+        if (date1 || date2) {
+          start = start + toTimestamp(date1) +`-`+ toTimestamp(date2);
+          return start
         }
-        else
-        {
-          end = end + toTimestamp(date2);
-        }
-        let ret = start + `-` + end;
-        return ret;
-
-        }
-
     }
 
-                            ;let f1 = func({{ filters_dates }},2); window.location.href=`{{ url }}&{{ filters_dates1.1 }}__range=${f1}`' style="width: 150px;">
+    function getTimestampRange(date_id) {
+        if (date_id == `date_1`) {
+            window.location.href=`{{ url }}&{{filters_dates1.0}}__range=${func({{ filters_dates }})}`;
+        }
+        else {
+            window.location.href=`{{ url }}&{{filters_dates1.1}}__range=${func({{ filters_dates }})}`;
+        }
+
+    }; getTimestampRange(`date_1`)
+    ' style="width: 150px; margin-left: 75%;"></div>
+
+    <div class="col"><input type="date" id="date_2" value="{{ date2_value }}" onfocusout="
+    function toTimestamp(strDate){
+        let datum = Date.parse(strDate);
+        return (datum/1000) - 10800;
+    }
+    function func(filters_dates) {
+        let date1 = document.getElementById(`date_1`).value;
+        let date2 = document.getElementById(`date_2`).value;
+        let start = ``
+        let end = ``
+        if (!date1 || date2) {
+          start = start + filters_dates[2] +`-`+ toTimestamp(date2);
+          return start;
+        }
+        if (!date2 || date1) {
+          let correct = toTimestamp(date1)
+          start = start + (toTimestamp(date1)) +`-`+ filters_dates[1];
+          return start;
+        }
+        if (date1 || date2) {
+          start = start + toTimestamp(date1) +`-`+ toTimestamp(date2);
+          return start
+        }
+    }
+
+    function getTimestampRange(date_id) {
+        if (date_id == `date_1`) {
+            window.location.href=`{{ url }}&{{filters_dates1.0}}__range=${func({{ filters_dates }})}`;
+        }
+        else {
+            window.location.href=`{{ url }}&{{filters_dates1.1}}__range=${func({{ filters_dates }})}`;
+        }
+
+    }; getTimestampRange(`date_2`)
+"
+                            class="form-control"
+                            style="width: 150px;">
     </div>
 </div>
+{% endif %}
 
+    {% endif %}
+{{ data }}
 {% comment %}window.location.href=`{{ url }}&{{ filters_dates.1 }}__daterange=${document.getElementById(`date_2`).value}`{% endcomment %}
         <table class="table table-hover table-striped table-light text-center">
 <form id="excel" method="POST" action="/excel?{{ url1 }}">
@@ -298,6 +275,7 @@
     {% endfor %}
 
     </form>
+
     <td>Действия</td>
     </tr>
     {% for data1 in data %}
@@ -308,6 +286,14 @@
                 <span><td>
 {#                    {{ data2 }}#}
                     <div class="container">
+{#                        {% if username ==  %}#}
+{##}
+{##}
+{##}
+{#                        {% endif %}#}
+                        {% comment %}Проверка авторства записи{% endcomment %}
+                        {% if 'auth' in data2 %}
+
                         <div class="row">
                             <div class="col"><a style="color: olive" href="/edit?section_id={{ section_id }}&subsection_id={{ sub_section_id }}&record_edit={{ data2 }}&model={{ model }}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16">
   <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001zm-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708l-1.585-1.585z"/>
@@ -316,6 +302,9 @@
   <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1V2zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5H2zm13-3H1v2h14V2zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
 </svg></a></div>
                         </div>
+                        {% else %}
+                            <h6><b>Недоступно</b></h6>
+                        {% endif %}
                     </div>
                 </td></span>
             {% else %}
@@ -332,4 +321,47 @@
     </table>
     </div>
 
+    {% if count == 0 %}
+        <br>
+        <h5 style="text-align: center; color: olive">Пока что в таблице нет записей! Вы можете добавить их при помощи формы ввода файла или вручную через форму</h5>
+    {% endif %}
+
 {% endblock %}
+<script>
+
+
+    function toTimestamp(strDate){
+        let datum = Date.parse(strDate);
+        return datum/1000;
+    }
+    function func(filters_dates) {
+        let date1 = document.getElementById(`date_1`).value;
+        let date2 = document.getElementById(`date_2`).value;
+        let start = ``
+        let end = ``
+        if (!date1 || date2) {
+          start = start + filters_dates[2] +`-`+ toTimestamp(date2);
+          return start;
+        }
+        if (!date2 || date1) {
+          start = start + toTimestamp(date1) +`-`+ filters_dates[1];
+          return start;
+        }
+        if (date1 || date2) {
+          start = start + toTimestamp(date1) +`-`+ toTimestamp(date2);
+          return start
+        }
+    }
+
+    function getTimestampRange(date_id) {
+        if (date_id == 'date_1') {
+            window.location.href=`{{ url }}&{{filters_dates.0}}=${func({{ filters_dates }})}`;
+        }
+        else {
+            window.location.href=`{{ url }}&{{filters_dates.1}}=${func({{ filters_dates }})}`;
+        }
+
+    }
+
+
+</script>
