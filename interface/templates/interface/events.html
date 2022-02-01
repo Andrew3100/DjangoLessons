@@ -9,9 +9,26 @@
     <div class="container">
         <div class="row">
             <div class="col text-center">
-                <h4>События системы</h4>
+                <h4>Журнал событий системы</h4>
             </div>
         </div>
+        <br>
+        <div class="row">
+
+            <table class="table table-bordered text-center">
+                <tr>
+                {% for foo in  headers %}
+                    <td>
+                        {{ foo }}
+                    </td>
+                {% endfor %}
+                </tr>
+
+            </table>
+
+
+        </div>
+
     </div>
 {% endblock %}
 

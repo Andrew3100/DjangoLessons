@@ -176,6 +176,9 @@ def get_model_name(string):
         return TableYoung
     if string == 'TableZaoch':
         return TableZaoch
+    if string == 'DjangoLogs':
+        return DjangoLogs
+
 
 # Функция формирует двумерный массив данных
 def get_table_data(table_structure, table_data, section_id, subsection_id, request):
@@ -248,7 +251,7 @@ def blocks(request):
     except AttributeError:
         username = None
         return render(request, 'interface/header/redirect.html')
-    sections = Sections.objects.all()
+    sections = Sections.objects.filter(id__lt=8)
     return render(request, 'interface/blocks.html',
                   {
                       'sections': sections,
@@ -272,7 +275,17 @@ def events(request):
     except AttributeError:
         username = None
         return render(request, 'interface/header/redirect.html')
+
+    data = DjangoLogs.objects.all()
+    table_structure = Subsections_data.objects.filter(section_id=8,
+                                                      subsection_id=19)
+    headers = []
+    for ts in table_structure:
+        headers.append(ts.html_descriptor)
+
+
     return render(request, 'interface/events.html', {
+        'headers': headers,
         'username': request.user.first_name
     })
 
