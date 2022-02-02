@@ -4,26 +4,21 @@
 
     <div class="container">
         <div class="row">
-        {{ id }}
-                    <div class="col-5">
-                        <label style="margin-top: 6px; text-align: center" class="form-label" for="selector_user">{{ i.0 }}</label>
-                    </div>
-                    <div class="col-7">
-                        <div class="col">
-                            <select style='width: 300px;' class='form-select' id='selector_user' onchange='document.location=this.options[this.selectedIndex].value'>
+                    <div class="col text-center">
+                            <p style="text-align: center"><select style='width: 750px; margin: auto' class='form-select' id='selector_user' onchange='document.location=this.options[this.selectedIndex].value'>
+                                <option>Выберите пользователя для просмотра и редактирования прав доступа</option>
                                 {% for key, value in user_datas.items %}
                                         <option value="/access?user_id={{ value }}">{{ key }}</option>
                                 {% endfor %}
-                            </select>
-                        </div>
+                            </select></p>
                     </div>
                 </div>
     <br>
     <br>
-{#    {{ access_list }}#}
+    {{ ac }}
         <div class="row">
             <div class="col">
-                <table class="table table-bordered text-center">
+                <table class="table table-hover table-striped table-light text-center shadow-lg p-3 mb-5 bg-body rounded">
                     {% for key, value in access_list.items %}
                         <h4 style="text-align: center">Пользователь: {{ key }}</h4>
                         <br>
@@ -50,7 +45,11 @@
                                             <input type="hidden" name="user_id" value="{{ user_id }}">
                                             <input type="hidden" name="block_name_for_close_open" value="{{ k }}">
                                             <input type="hidden" name="access_status" value="{{ v }}">
-                                            <div class="col"><button type="submit" class="btn btn-primary">Переопределить</button></div>
+                                            {% if v == 'Недоступно' %}
+                                                <div class="col"><button type="submit" class="btn btn-danger">Открыть доступ</button></div>
+                                            {% else %}
+                                                <div class="col"><button type="submit" class="btn btn-success">Закрыть доступ</button></div>
+                                            {% endif %}
                                         </form>
                                     </div>
 

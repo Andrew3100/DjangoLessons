@@ -258,10 +258,15 @@ def blocks(request):
     except AttributeError:
         username = None
         return render(request, 'interface/header/redirect.html')
-    sections = Sections.objects.filter(id__lt=8)
+    sections = Sections.objects.filter(id__in=get_access_block_list(request.user.id))
+    message = ''
+    if get_access_block_list(request.user.id) == []:
+        message = 'Для Вас не найдено доступных разделов. Для получения прав доступа обратитесь к администратору информационной системы'
+
     return render(request, 'interface/blocks.html',
                   {
                       'sections': sections,
+                      'message': message,
                       'username': request.user.first_name
                   }
                   )
@@ -289,6 +294,27 @@ def get_block_name_by_block_id(block_id,request):
         return bl_name.interface_name
 
 
+# Доступен ли пользователю текущий блок
+def this_block_access_for_user(request, user_id, block_id):
+    access = AccessBlock.objects.filter(user_id=user_id,is_access=1)
+    ids = []
+    for a in access:
+        ids.append(a.block_id)
+    if block_id in ids:
+        return True
+    else:
+        return False
+
+
+# Возвращает массив блоков, доступных авторизованному пользователю
+def get_access_block_list(user_id):
+    access = AccessBlock.objects.filter(user_id=user_id,is_access=1)
+    ids = []
+    for a in access:
+        ids.append(a.block_id)
+    return ids
+
+
 
 def access(request):
     try:
@@ -307,6 +333,21 @@ def access(request):
         '1': 'Доступно',
         '0': 'Недоступно'
     }
+
+    if is_get_param_in_this_url(current_url,'block_name_for_close_open'):
+        block = Sections.objects.filter(interface_name=request.GET['block_name_for_close_open'])
+        for b in block:
+            block_id = b.id
+        access_id = AccessBlock.objects.filter(user_id=request.GET['user_id'],block_id=block_id)
+        for a_id in access_id:
+            acc_id = a_id.id
+        if request.GET['access_status'] == 'Недоступно':
+            label = 1
+        else:
+            label = 0
+        re_assign = AccessBlock.objects.filter(id=acc_id).update(is_access=label)
+
+
     access = ''
     access_list = ''
     # Если в селекторе выбран пользователь - выводим таблицу с его правами доступа
@@ -320,17 +361,6 @@ def access(request):
         for acc in access:
             access_block_dict[get_block_name_by_block_id(acc.block_id,request)] = dict_status[str(acc.is_access)]
         access_list[firstname] = access_block_dict
-
-    if is_get_param_in_this_url(current_url,'block_name_for_close_open'):
-        block = Sections.objects.filter(interface_name=request.GET['block_name_for_close_open'])
-        for b in block:
-            block_id = b.id
-        access_id = AccessBlock.objects.filter(user_id=request.GET['user_id'],block_id=block_id)
-        # for a_id in access_id:
-        #     acc_id = a_id.id
-        #
-        # re_assign = AccessBlock.objects.filter(id=acc_id).update(is_access=label)
-
 
 
     return render(request, 'interface/access.html', {
@@ -393,9 +423,12 @@ def delete_record(request,model,id):
 
 
 def table_list(request):
+
     subsections = Sub_sections.objects.all()
     sections = Sections.objects.all()
     url = request.GET['block']
+    if int(url) not in get_access_block_list(request.user.id):
+        return render(request, 'interface/access_error.html')
 
     return render(request, 'interface/table_list.html',
                   {
@@ -745,6 +778,10 @@ def table_view(request):
     section_id = request.GET['section']
     sub_section_id = request.GET['sub_section']
     section = Sections.objects.filter(id=request.GET['section'])
+    # Проверка доступа к блоку чтобы не наебали по GET-параметрам
+    if section_id not in get_access_block_list(request.user.id):
+        return render(request, 'interface/access_error.html')
+
 
     for s_section in section:
         section_id = s_section.id
