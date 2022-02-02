@@ -371,10 +371,19 @@ class DjangoLogs(models.Model):
     timestamp_label = models.CharField(max_length=45, blank=True, null=True)
     author = models.TextField(blank=True, null=True)
     event = models.TextField(blank=True, null=True)
-    section_id = models.IntegerField(blank=True, null=True)
-    subsection_id = models.IntegerField(blank=True, null=True)
     is_delete = models.TextField(blank=True, null=True)
+    table = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = True
         db_table = 'django_logs'
+
+
+class AccessBlock(models.Model):
+    user_id = models.IntegerField(blank=True, null=True)
+    block_id = models.IntegerField(blank=True, null=True)
+    is_access = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'access_block'

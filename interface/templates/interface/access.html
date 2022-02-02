@@ -1,0 +1,74 @@
+{% extends 'interface/header/header.html' %}
+{% block main_content %}
+
+
+    <div class="container">
+        <div class="row">
+        {{ id }}
+                    <div class="col-5">
+                        <label style="margin-top: 6px; text-align: center" class="form-label" for="selector_user">{{ i.0 }}</label>
+                    </div>
+                    <div class="col-7">
+                        <div class="col">
+                            <select style='width: 300px;' class='form-select' id='selector_user' onchange='document.location=this.options[this.selectedIndex].value'>
+                                {% for key, value in user_datas.items %}
+                                        <option value="/access?user_id={{ value }}">{{ key }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+    <br>
+    <br>
+{#    {{ access_list }}#}
+        <div class="row">
+            <div class="col">
+                <table class="table table-bordered text-center">
+                    {% for key, value in access_list.items %}
+                        <h4 style="text-align: center">Пользователь: {{ key }}</h4>
+                        <br>
+                        <tr>
+                        <td><b>Наименование раздела</b></td>
+                        <td><b>Статус раздела</b></td>
+                    </tr>
+                    {% for k, v in value.items %}
+                    <tr>
+                        <td>{{ k }}</td>
+                        <td>
+{#                            #}
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col">
+                                        {% if v == 'Недоступно' %}
+                                            <div class="col" style="margin-top: 5px; color: red"><b>{{ v }}</b></div>
+                                        {% else %}
+                                            <div class="col" style="margin-top: 5px; color: green"><b>{{ v }}</b></div>
+                                        {% endif %}</div>
+                                    <div class="col">
+                                        <form method="get">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="user_id" value="{{ user_id }}">
+                                            <input type="hidden" name="block_name_for_close_open" value="{{ k }}">
+                                            <input type="hidden" name="access_status" value="{{ v }}">
+                                            <div class="col"><button type="submit" class="btn btn-primary">Переопределить</button></div>
+                                        </form>
+                                    </div>
+
+
+
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+

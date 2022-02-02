@@ -13,5 +13,6 @@ urlpatterns = [
     path('add', views.add),
     path('excel', views.excel_report),
     path('delete', views.delete),
-    path('edit', views.edit)
+    path('edit', views.edit),
+    path('access', views.access)
 ]

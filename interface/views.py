@@ -40,7 +40,8 @@ def get_table_name(subsection):
 # Проверяет, входит ли заданный GET-параметр в URL
 def is_get_param_in_this_url(url, get):
     array = url.split('&')
-
+    if len(array) == 0:
+        return False
     del array[0]
     array = array
     dict = {}
@@ -93,8 +94,14 @@ def filter_MySQL_field(field):
 # Функция создаёт фильтры по полям. Аргумент - массив полей. Возврат - словарь с ключом "описание фильтра", а значением массив данных по полю
 def get_field_filters(model, array, url, request):
     arr1 = []
+    if 'event' in url:
+        sect_id = 8
+        subsect_id = 19
+    else:
+        subsect_id = request.GET['section']
+        sect_id = request.GET['sub_section']
     for i in range(0, len(array)):
-        label = Subsections_data.objects.filter(section_id = request.GET['section'], subsection_id = request.GET['sub_section'], sql_field_name = array[i])
+        label = Subsections_data.objects.filter(section_id = subsect_id, subsection_id = sect_id, sql_field_name = array[i])
         arr = []
         # Имя метки:
         for l in label:
@@ -269,6 +276,71 @@ def analisys(request):
         'username': request.user.first_name
     })
 
+
+def get_user_attr(attr_name,id):
+    user_attr = User.objects.get(pk=id)
+    attr = user_attr.__getattribute__(attr_name)
+    return attr
+
+
+def get_block_name_by_block_id(block_id,request):
+    block_name = Sections.objects.filter(id=block_id)
+    for bl_name in block_name:
+        return bl_name.interface_name
+
+
+
+def access(request):
+    try:
+        username = request.user.first_name
+    except AttributeError:
+        username = None
+        return render(request, 'interface/header/redirect.html')
+    current_url = request.get_full_path_info()
+    user_list = User.objects.filter(is_active=1)
+    user_name_list = []
+    user_name_id = []
+    user_datas ={}
+    for list in user_list:
+        user_datas[list.first_name] = list.id
+    dict_status = {
+        '1': 'Доступно',
+        '0': 'Недоступно'
+    }
+    access = ''
+    access_list = ''
+    # Если в селекторе выбран пользователь - выводим таблицу с его правами доступа
+    if request.GET['user_id'] != 'all':
+        access = AccessBlock.objects.filter(user_id=request.GET['user_id'])
+        access_list = {}
+        access_block = []
+        access_status = []
+        access_block_dict = {}
+        firstname = get_user_attr('first_name',request.GET['user_id'])
+        for acc in access:
+            access_block_dict[get_block_name_by_block_id(acc.block_id,request)] = dict_status[str(acc.is_access)]
+        access_list[firstname] = access_block_dict
+
+    if is_get_param_in_this_url(current_url,'block_name_for_close_open'):
+        block = Sections.objects.filter(interface_name=request.GET['block_name_for_close_open'])
+        for b in block:
+            block_id = b.id
+        access_id = AccessBlock.objects.filter(user_id=request.GET['user_id'],block_id=block_id)
+        # for a_id in access_id:
+        #     acc_id = a_id.id
+        #
+        # re_assign = AccessBlock.objects.filter(id=acc_id).update(is_access=label)
+
+
+
+    return render(request, 'interface/access.html', {
+        'username': username,
+        'user_datas': user_datas,
+        'access': access,
+        'access_list': access_list,
+        'user_id': request.GET['user_id'],
+    })
+
 def events(request):
     try:
         username = request.user.first_name
@@ -283,9 +355,21 @@ def events(request):
     for ts in table_structure:
         headers.append(ts.html_descriptor)
 
+    data = get_table_data(table_structure, data, 8, 19, request)
+    for dd in data:
+        # Удаляем ИД лога
+        del dd[len(dd)-1]
+        # Переводим крайний элемент из таймстампа в дату
+        dd[len(dd) - 1] = get_date_from_timestamp(dd[len(dd)-1],'%d-%m-%Y, %H:%I:%S')
+    filters = get_filters_data(DjangoLogs, 8, 19)
+    filters = get_a_set_of_filters(filters)
+    # Получаем фильтры по полям
+    filters_by_fields_labels = get_field_filters(DjangoLogs, filters[0], request.get_full_path_info(), request)
 
     return render(request, 'interface/events.html', {
         'headers': headers,
+        'data': data,
+        'filters_by_fields_labels': filters_by_fields_labels,
         'username': request.user.first_name
     })
 
@@ -326,13 +410,15 @@ def table_list(request):
 
 # Вставка лога по имени события
 def insert_log(event,model,request,section,subsection):
+    t_n = Sub_sections.objects.filter(section_id=section,id=subsection)
+    for tt in t_n:
+        table_name = tt.interface_name
     log_dict = {}
     log_dict['timestamp_label'] = str(int(t.time()))
     log_dict['author'] = request.user.first_name
     log_dict['event'] = event
     log_dict['is_delete'] = 0
-    log_dict['subsection_id'] = subsection
-    log_dict['section_id'] = section
+    log_dict['table'] = table_name
     save = DjangoLogs(**log_dict).save()
     return save
 
@@ -376,7 +462,7 @@ def add(request):
     # Аргумент с двумя звёздочками - распаковка словаря обрабатываесых данных
     # За счёт него можно передавать сколько угодно значений, а не фиксированное количество
     save = get_model_name(class_name)(**posts_names_dict).save()
-    log = insert_log('Вставка записи', class_name,request,request.GET['section'],request.GET['sub_section'])
+    log = insert_log('Вставка записи ', class_name,request,request.GET['section'],request.GET['sub_section'])
     # Текст урл для редиректа
     new_url = '/table_view?section=' + str(request.GET['section']) + '&sub_section=' + str(request.GET['sub_section'])
 
@@ -637,10 +723,10 @@ def get_format_date(request, filters):
     else:
         return False
 
-def get_date_from_timestamp(timestamp):
+def get_date_from_timestamp(timestamp,format='%d-%m-%Y'):
     from datetime import datetime
     # Прибавили сутки в секундах, так как почему-то библиотека datetime отнимает сутки от метки timestamp
-    date = datetime.utcfromtimestamp(int(timestamp)+86400).strftime('%d-%m-%Y')
+    date = datetime.utcfromtimestamp(int(timestamp)+86400).strftime(format)
     return date
 
 def get_timestamp_from_date(date):
