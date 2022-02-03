@@ -592,9 +592,14 @@ def excel_report(request):
             times = []
             for dick in data_full[i]:
                 times.append(get_date_from_timestamp(int(dick)))
+            if is_get_param_in_this_url(current_url,'template'):
+                clear(times)
             dictionary[headers[i]] = times
         else:
+            if is_get_param_in_this_url(current_url,'template'):
+                clear(data_full[i])
             dictionary[headers[i]] = data_full[i]
+
     pandas_DF = pandas.DataFrame(dictionary)
     time_label_filename = str(int(t.time())) +'_'+ str(request.user.first_name)
     save_path = 'interface/reports/'+str(time_label_filename)+'.xlsx'
