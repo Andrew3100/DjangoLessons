@@ -6,7 +6,7 @@
         <div class="row">
                     <div class="col text-center">
                             <p style="text-align: center"><select style='width: 750px; margin: auto' class='form-select' id='selector_user' onchange='document.location=this.options[this.selectedIndex].value'>
-                                <option>Выберите пользователя для просмотра и редактирования прав доступа</option>
+                                <option>{{ access_list_username}}</option>
                                 {% for key, value in user_datas.items %}
                                         <option value="/access?user_id={{ value }}">{{ key }}</option>
                                 {% endfor %}
@@ -70,4 +70,7 @@
 
 {% endblock %}
 
+{% block footer %}
+
+{% endblock %}
 

@@ -272,11 +272,23 @@ def blocks(request):
                   )
 
 def analisys(request):
+    import matplotlib.pyplot as plt
+    import numpy as np
     try:
         username = request.user.first_name
     except AttributeError:
         username = None
         return render(request, 'interface/header/redirect.html')
+    # Только суперадминам
+    # if request.user.is_superuser != 1:
+    #     return render(request, 'interface/access_error.html')
+    x = np.arange(0, 15, 0.00001)
+    y = np.sin(x)
+
+    plt.plot(x, y)
+    # plt.show()
+    plt.savefig('interface/matplotlib/saved_figure.jpg')
+
     return render(request, 'interface/analisys.html',{
         'username': request.user.first_name
     })
@@ -295,12 +307,13 @@ def get_block_name_by_block_id(block_id,request):
 
 
 # Доступен ли пользователю текущий блок
-def this_block_access_for_user(request, user_id, block_id):
-    access = AccessBlock.objects.filter(user_id=user_id,is_access=1)
+def this_block_access_for_user(request, user_id, block_idd):
+    access = AccessBlock.objects.filter(user_id=user_id,is_access=1,block_id=block_idd)
+    # return access
     ids = []
     for a in access:
-        ids.append(a.block_id)
-    if block_id in ids:
+        ids.append(int(a.block_id))
+    if block_idd in ids:
         return True
     else:
         return False
@@ -308,8 +321,8 @@ def this_block_access_for_user(request, user_id, block_id):
 
 # Возвращает массив блоков, доступных авторизованному пользователю
 def get_access_block_list(user_id):
-    access = AccessBlock.objects.filter(user_id=user_id,is_access=1)
     ids = []
+    access = AccessBlock.objects.filter(user_id=user_id,is_access=1)
     for a in access:
         ids.append(a.block_id)
     return ids
@@ -352,6 +365,7 @@ def access(request):
     access_list = ''
     # Если в селекторе выбран пользователь - выводим таблицу с его правами доступа
     if request.GET['user_id'] != 'all':
+        access_list_username = get_user_attr('first_name', request.GET['user_id'])
         access = AccessBlock.objects.filter(user_id=request.GET['user_id'])
         access_list = {}
         access_block = []
@@ -361,7 +375,8 @@ def access(request):
         for acc in access:
             access_block_dict[get_block_name_by_block_id(acc.block_id,request)] = dict_status[str(acc.is_access)]
         access_list[firstname] = access_block_dict
-
+    else:
+        access_list_username = 'Выберите пользователя для просмотра и редактирования прав доступа'
 
     return render(request, 'interface/access.html', {
         'username': username,
@@ -369,6 +384,7 @@ def access(request):
         'access': access,
         'access_list': access_list,
         'user_id': request.GET['user_id'],
+        'access_list_username': access_list_username
     })
 
 def events(request):
@@ -377,10 +393,10 @@ def events(request):
     except AttributeError:
         username = None
         return render(request, 'interface/header/redirect.html')
-
+    if request.user.is_superuser != 1:
+        return render(request, 'interface/access_error.html')
     data = DjangoLogs.objects.all()
-    table_structure = Subsections_data.objects.filter(section_id=8,
-                                                      subsection_id=19)
+    table_structure = Subsections_data.objects.filter(section_id=8, subsection_id=19)
     headers = []
     for ts in table_structure:
         headers.append(ts.html_descriptor)
@@ -524,43 +540,6 @@ def load_file(path, request, filename,label):
     return response
 
 
-
-# Проверяет является ли поле количественным и получает для него диапазон
-def get_filter_diapason(field, model, url, request):
-    start = 0
-    end = 0
-
-    parse_url = url.split('&')
-    del parse_url[0]
-    del parse_url[0]
-
-    for i in range(0, len(parse_url)):
-        datas = parse_url[i].split('=')
-
-        # Запрос на проверку типа фильтра поля
-        is_count = Subsections_data.objects.filter(section_id = request.POST['s'],subsection_id = request.POST['ss'],sql_field_name=filter_MySQL_field(field))
-        for is_counted in is_count:
-            # Если поле не количественное, то получаем диапазон количественных данных
-            if is_counted.filter_type != 'count':
-                return False
-            else:
-                if is_get_param_in_this_url(url, field):
-                    if '___rangestart' in datas[0]:
-                        start = datas[1]
-                    if '___rangeend' in datas[0]:
-                        end = datas[1]
-    return start,end
-
-
-def GET_dictionary(url):
-    dict = {}
-    parse = url.split('&')
-    for par in parse:
-        parss = par.split('=')
-        if 'section' not in parss[0]:
-            dict[parss[0]] = urldecode(parss[1])
-    return dict
-
 def get_min_or_max(param,field,model):
     datas = model.objects.filter(is_delete=0)
     maxs = []
@@ -574,34 +553,6 @@ def get_min_or_max(param,field,model):
     else:
         return max(list(set(maxs)))
         # return datas
-
-
-def merge_range_data(dictionary, model):
-    vals = list(dictionary.values())
-    keys = list(dictionary.keys())
-    dict = {}
-    starts = {}
-    ends = {}
-    for i in range(0, len(keys)):
-        if '___range' in keys[i]:
-            if '___rangestart' in keys[i]:
-                if (vals[i]) == 'Всё' or 'Все значения':
-                    starts[filter_MySQL_field(keys[i])] = get_min_or_max('min',filter_MySQL_field(keys[i]),model) # взять минимальное по полю
-                else:
-                    starts[filter_MySQL_field(keys[i])] = vals[i]
-            if '___rangeend' in keys[i]:
-                if (vals[i]) == 'Всё' or 'Все значения':
-                    ends[filter_MySQL_field(keys[i])] = str(get_min_or_max('max',filter_MySQL_field(keys[i]),model)) # взять максимальное по полю
-                else:
-                    ends[filter_MySQL_field(keys[i])] = str(vals[i])
-        else:
-            dict[keys[i]] = vals[i]
-    keys = list(starts.keys())
-    for i in range(0, len(keys)):
-        dict[keys[i]+'__range'] = (starts[keys[i]], ends[keys[i]])
-    # Словарь, готовый для распаковки
-    return starts, ends
-
 
 def excel_report(request):
 
@@ -767,6 +718,9 @@ def get_timestamp_from_date(date):
     timestamp = parser.parse(date).timestamp()
     return int(timestamp)
 
+
+
+
 def table_view(request):
     # Редирект, на случай если кто-то додумается до очистки куков
     try:
@@ -777,11 +731,11 @@ def table_view(request):
     # Достаём имя раздела по идентификатору, указанному в GET параметре
     section_id = request.GET['section']
     sub_section_id = request.GET['sub_section']
+    sub_section_id = request.GET['sub_section']
     section = Sections.objects.filter(id=request.GET['section'])
     # Проверка доступа к блоку чтобы не наебали по GET-параметрам
-    if section_id not in get_access_block_list(request.user.id):
+    if this_block_access_for_user(request, request.user.id, int(section_id)) == False:
         return render(request, 'interface/access_error.html')
-
 
     for s_section in section:
         section_id = s_section.id
@@ -901,6 +855,7 @@ def table_view(request):
         'dates_isset': dates_isset,
         # Метка наличия записей
         'count': count,
+        # 'sql': sql,
     })
 
 
@@ -976,6 +931,3 @@ def GetCountriesList(request):
         if fn != '':
             Dict[countr.fullname] = countr.id
     return Dict
-
-
-
