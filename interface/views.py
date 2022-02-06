@@ -377,7 +377,6 @@ def access(request):
         access_list[firstname] = access_block_dict
     else:
         access_list_username = 'Выберите пользователя для просмотра и редактирования прав доступа'
-
     return render(request, 'interface/access.html', {
         'username': username,
         'user_datas': user_datas,
@@ -385,6 +384,47 @@ def access(request):
         'access_list': access_list,
         'user_id': request.GET['user_id'],
         'access_list_username': access_list_username
+    })
+
+
+def sync_access(request):
+    try:
+        username = request.user.first_name
+    except AttributeError:
+        username = None
+        return render(request, 'interface/header/redirect.html')
+
+    user_id_array = []
+    user_id_array_in_access = []
+    scan_users = User.objects.filter(is_active=1)
+    # собираем иды всех пользователей
+    for s_u in scan_users:
+        user_id_array.append((s_u.id))
+    # собираем иды всех пользователей, данные о правах которых есть в таблице прав доступа
+    scan_users_access = AccessBlock.objects.all()
+    for s_u_a in scan_users_access:
+        user_id_array_in_access.append((s_u_a.user_id))
+    user_id_array_in_access = list(set(user_id_array_in_access))
+    new_user_list = []
+    for k in user_id_array:
+        if k not in user_id_array_in_access:
+            new_user_list.append(k)
+
+    block_list = Sections.objects.filter(include=1)
+    blocks = []
+    for b in block_list:
+        blocks.append(b.id)
+    New_access_value = {}
+    for new in new_user_list:
+        New_access_value = {}
+        for b_l in blocks:
+            New_access_value['user_id'] = new
+            New_access_value['block_id'] = b_l
+            New_access_value['is_access'] = 0
+            AccessBlock(**New_access_value).save()
+
+    return render(request, 'interface/sync_message.html', {
+        'new_user_list': new_user_list
     })
 
 def events(request):

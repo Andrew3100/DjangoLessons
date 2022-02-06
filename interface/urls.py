@@ -17,6 +17,7 @@ urlpatterns = [
     path('excel', views.excel_report),
     path('delete', views.delete),
     path('edit', views.edit),
-    path('access', views.access)
+    path('access', views.access),
+    path('sync', views.sync_access)
 ]
 

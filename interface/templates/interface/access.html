@@ -15,12 +15,13 @@
                 </div>
     <br>
     <br>
-    {{ ac }}
         <div class="row">
             <div class="col">
                 <table class="table table-hover table-striped table-light text-center shadow-lg p-3 mb-5 bg-body rounded">
                     {% for key, value in access_list.items %}
                         <h4 style="text-align: center">Список прав доступа для: <b>{{ key }}</b></h4>
+                        <br>
+                        <h5 style="text-align: center"><a href="/sync">Синхронизация прав доступа</a></h5>
                         <br>
                         <tr>
                         <td><b>Наименование раздела</b></td>
