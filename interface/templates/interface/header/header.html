@@ -1,11 +1,11 @@
 
-{% if request.user.is_authentificated %}
-    <h2 style="margin-top: 100px; text-align: center; color: red">Доступ запрещён</h2>
-    <h4 style="margin-top: 100px; text-align: center; color: red">Возможно, Вы не авторизованы. <a href="{% url 'login' %}">Перейти на страницу авторизации</a></h4>
-    <script>
-        stop();
-    </script>
-{% endif %}
+{#{% if request.user.is_authentificated %}#}
+{#    <h2 style="margin-top: 100px; text-align: center; color: red">Доступ запрещён</h2>#}
+{#    <h4 style="margin-top: 100px; text-align: center; color: red">Возможно, Вы не авторизованы. <a href="{% url 'login' %}">Перейти на страницу авторизации</a></h4>#}
+{#    <script>#}
+{#        stop();#}
+{#    </script>#}
+{#{% endif %}#}
 <!doctype html>
 <html lang="ru">
   <head>

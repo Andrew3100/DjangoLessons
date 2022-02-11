@@ -20,7 +20,7 @@ from django import *
 import urllib.parse
 import pandas
 import time as t
-
+import openpyxl
 
 def urlencode(str):
   return urllib.parse.quote(str)
@@ -396,6 +396,7 @@ def sync_access(request):
 
     user_id_array = []
     user_id_array_in_access = []
+    block_id_array_in_access = []
     scan_users = User.objects.filter(is_active=1)
     # собираем иды всех пользователей
     for s_u in scan_users:
@@ -404,6 +405,7 @@ def sync_access(request):
     scan_users_access = AccessBlock.objects.all()
     for s_u_a in scan_users_access:
         user_id_array_in_access.append((s_u_a.user_id))
+        block_id_array_in_access.append((s_u_a.block_id))
     user_id_array_in_access = list(set(user_id_array_in_access))
     new_user_list = []
     for k in user_id_array:
@@ -415,6 +417,7 @@ def sync_access(request):
     for b in block_list:
         blocks.append(b.id)
     New_access_value = {}
+
     for new in new_user_list:
         New_access_value = {}
         for b_l in blocks:
@@ -423,8 +426,24 @@ def sync_access(request):
             New_access_value['is_access'] = 0
             AccessBlock(**New_access_value).save()
 
+    # Также скрипт синхронизаиции проверяет наличие новых блоков и может подключить к ним старых пользователей
+    # Массив несуществующих блоков
+    not_isset_blocks = []
+    for i in range(0, len(blocks)):
+        if blocks[i] not in list(set(block_id_array_in_access)):
+            not_isset_blocks.append(blocks[i])
+
+    # Перебираем новые блоки и добавляем их в список прав доступа
+    for new in user_id_array:
+        New_access_value = {}
+        for b_l in not_isset_blocks:
+            New_access_value['user_id'] = new
+            New_access_value['block_id'] = b_l
+            New_access_value['is_access'] = 0
+            AccessBlock(**New_access_value).save()
     return render(request, 'interface/sync_message.html', {
-        'new_user_list': new_user_list
+        # 'not_isset': not_isset_blocks,
+        # 'new_user_list': new_user_list
     })
 
 def events(request):
@@ -631,7 +650,11 @@ def excel_report(request):
         if headers[i] in ['Дата начала','Дата окончания','Дата начала практики','Дата окончания практики','Начало реализации','Окончание реализации','Дата Заключения','Срок действия','Дата заключения договора']:
             times = []
             for dick in data_full[i]:
-                times.append(get_date_from_timestamp(int(dick)))
+                # Бессрочные даты для отчёта
+                if int(dick) == 10800:
+                    times.append('Бессрочно')
+                else:
+                    times.append(get_date_from_timestamp(int(dick)))
             if is_get_param_in_this_url(current_url,'template'):
                 clear(times)
             dictionary[headers[i]] = times
@@ -755,7 +778,7 @@ def get_format_date(request, filters):
 def get_date_from_timestamp(timestamp,format='%d-%m-%Y'):
     from datetime import datetime
     # Прибавили сутки в секундах, так как почему-то библиотека datetime отнимает сутки от метки timestamp
-    date = datetime.utcfromtimestamp(int(timestamp)+86400).strftime(format)
+    date = datetime.utcfromtimestamp(int(timestamp)).strftime(format)
     return date
 
 def get_timestamp_from_date(date):
@@ -900,6 +923,7 @@ def table_view(request):
         'dates_isset': dates_isset,
         # Метка наличия записей
         'count': count,
+        'count1': len(data),
         # 'sql': sql,
     })
 
@@ -916,7 +940,8 @@ def upload_file(request, sub_section):
         datas = Subsections_data.objects.filter(section_id=section_id, subsection_id=sub_section_id)
         # Собираем заголовки для нужной таблицы из базы.
         database_headers = []
-
+        # Год, за который выгружаются записи берётся из названия файла
+        upload_year = str(request.FILES['excel']).split('.')[0]
         for data in datas:
             if data.html_descriptor != 'Автор' and data.html_descriptor != 'Год':
                 database_headers.append(data.html_descriptor)
@@ -934,11 +959,12 @@ def upload_file(request, sub_section):
         for i in range(0,len(file)):
             if 'Страна прибытия' in database_headers:
                 country = file['Страна прибытия'][i]
-                if country not in list(lens.keys()):
-                    log = 'В строке ' + str(i + 2) + 'файла Excel найдена ошибка в наименовании страны. Исправьте её и повторите импорт снова.'
-                    insert_log('Ошибка в наименовании страны', get_class_name_by_section_subsection(sub_section), request,
-                               section_id, sub_section_id)
-                    return log
+                # Раскомметировать, если необходима синтаксическая проверка стран
+                # if country not in list(lens.keys()):
+                #     log = 'В строке ' + str(i + 2) + 'файла Excel найдена ошибка в наименовании страны. Исправьте её и повторите импорт снова.'
+                #     insert_log('Ошибка в наименовании страны', get_class_name_by_section_subsection(sub_section), request,
+                #                section_id, sub_section_id)
+                #     return log
             # Словарь для записи
             dict_save = {}
             for data in datas:
@@ -946,10 +972,13 @@ def upload_file(request, sub_section):
                     # Если попадается поле с датой
                     if data.html_form_data_type == 'date':
                         # переводим дату в таймстамп
-                        dict_save[data.sql_field_name] = get_timestamp_from_date(str(file[data.html_descriptor][i]))
+                        if file[data.html_descriptor][i] == 'Бессрочно':
+                            dict_save[data.sql_field_name] = 10800
+                        else:
+                            dict_save[data.sql_field_name] = get_timestamp_from_date(str(file[data.html_descriptor][i]))
                     else:
                         dict_save[data.sql_field_name] = file[data.html_descriptor][i]
-            dict_save['year_load'] = 2020
+            dict_save['year_load'] = upload_year
             dict_save['author'] = request.user.first_name
             dict_save['is_delete'] = 0
             array_dicts.append(dict_save)
