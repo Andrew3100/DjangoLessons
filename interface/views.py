@@ -714,6 +714,7 @@ def delete(request):
 def edit(request):
     section_id = request.GET['section_id']
     sub_section_id = request.GET['subsection_id']
+    sub_section_id = request.GET['subsection_id']
     record_delete_id = request.GET['record_edit']
     current_url = request.get_full_path_info()
     edit = get_model_name(request.GET['model']).objects.filter(id=int(record_delete_id[0]))
@@ -731,6 +732,7 @@ def edit(request):
                 dat.append(t.sql_field_name)
                 dat.append(t.html_form_data_type)
                 dat.append(data[0][i])
+                dat.append(t.required)
                 i = i + 1
                 dat_full.append(dat)
         insert_log('Редактирование записи с идентификатором '+str(record_delete_id[0]),request.GET['model'],request,section_id,sub_section_id)
@@ -747,8 +749,11 @@ def edit(request):
         post_data = list(request.POST)
         del post_data[0]
         for post in post_data:
-            dict[post] = request.POST[post]
-            # dict[post1[0]] = post1[1]
+            if 'timestamp' in post:
+                dict[post] = get_timestamp_from_date((request.POST[post]))
+            else:
+                dict[post] = request.POST[post]
+# dict[post1[0]] = post1[1]
         delete = get_model_name(request.GET['model']).objects.filter(id=int(record_delete_id[0])).update(**dict)
         return render(request, 'interface/edit.html', {
             'section': section_id,
@@ -783,6 +788,8 @@ def get_date_from_timestamp(timestamp,format='%d-%m-%Y'):
 
 def get_timestamp_from_date(date):
     from dateutil import parser
+    if date == '':
+        return 10800
     timestamp = parser.parse(date).timestamp()
     return int(timestamp)
 
