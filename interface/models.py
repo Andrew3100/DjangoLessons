@@ -387,3 +387,13 @@ class AccessBlock(models.Model):
     class Meta:
         managed = True
         db_table = 'access_block'
+
+
+class InterfaceSettings(models.Model):
+    name_setting = models.TextField(blank=True, null=True)
+    descr = models.TextField(blank=True, null=True)
+    include = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'interface_settings'

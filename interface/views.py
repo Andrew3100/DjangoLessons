@@ -37,6 +37,16 @@ def get_table_name(subsection):
     return name
 
 
+# Проверяет включена ли настройка по её идентификатору
+def get_settings_status(id):
+    settings = InterfaceSettings.objects.filter(id=int(id))
+    for s in settings:
+        if s.include == 1:
+            return True
+        else:
+            return False
+
+
 # Проверяет, входит ли заданный GET-параметр в URL
 def is_get_param_in_this_url(url, get):
     array = url.split('&')
@@ -485,9 +495,19 @@ def reports(request):
     except AttributeError:
         username = None
         return render(request, 'interface/header/redirect.html')
-    return render(request, 'interface/reports.html', {
-        'username': request.user.first_name
-    })
+
+    dict = {}
+    dict['settings'] = InterfaceSettings.objects.all()
+    # Если нажата кнопка вкл / выкл настройку
+    if is_get_param_in_this_url(request.get_full_path_info(),'setting_id'):
+        if request.GET['action'] == 'off':
+            re_assign = InterfaceSettings.objects.filter(id=int(request.GET['setting_id'])).update(include=0)
+        else:
+            re_assign = InterfaceSettings.objects.filter(id=int(request.GET['setting_id'])).update(include=1)
+
+
+    return render(request, 'interface/reports.html', dict)
+
 
 def login(request):
     return render(request, 'interface/login.html')
@@ -960,18 +980,21 @@ def upload_file(request, sub_section):
             return log_message
 
         lens = GetCountriesList(request)
-
+        check_country = 0
+        if get_settings_status(1):
+            check_country = 1
         # Массив словарей для записи
         array_dicts = []
         for i in range(0,len(file)):
             if 'Страна прибытия' in database_headers:
                 country = file['Страна прибытия'][i]
-                # Раскомметировать, если необходима синтаксическая проверка стран
-                # if country not in list(lens.keys()):
-                #     log = 'В строке ' + str(i + 2) + 'файла Excel найдена ошибка в наименовании страны. Исправьте её и повторите импорт снова.'
-                #     insert_log('Ошибка в наименовании страны', get_class_name_by_section_subsection(sub_section), request,
-                #                section_id, sub_section_id)
-                #     return log
+                # Если установлена настройка синтаксической проверки стран
+                if check_country == 1:
+                    if country not in list(lens.keys()):
+                        log = 'В строке ' + str(i + 2) + 'файла Excel найдена ошибка в наименовании страны. Исправьте её и повторите импорт снова.'
+                        insert_log('Ошибка в наименовании страны', get_class_name_by_section_subsection(sub_section), request,
+                                   section_id, sub_section_id)
+                        return log
             # Словарь для записи
             dict_save = {}
             for data in datas:

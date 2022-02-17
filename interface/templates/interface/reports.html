@@ -9,9 +9,38 @@
     <div class="container">
         <div class="row">
             <div class="col text-center">
-                <h4>Страница работы с отчётами</h4>
+                <h4>Настройки системы</h4>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+
+        </div>
+    {{ true }}
+    {{ q }}
+        <div class="row">
+            <div class="col text-center">
+                <table class="table table-success table-striped table-hover">
+                    <tr>
+                        <td>Настройка</td>
+                        <td>Описание</td>
+                        <td>Статус</td>
+                    </tr>
+                    {% for setting in settings %}
+                        <tr>
+                            <td>{{ setting.name_setting }}</td>
+                            <td>{{ setting.descr }}</td>
+                            {% if setting.include == 0 %}
+                                <td><a href="/reports?edit_s=1&setting_id={{ setting.id }}&action=on" class="btn btn-success">Включить</td>
+                                {% else %}
+                                <td><a  class="btn btn-danger" href="/reports?edit_s=1&setting_id={{ setting.id }}&action=off">Выключить</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </table>
             </div>
         </div>
     </div>
+
 {% endblock %}
 

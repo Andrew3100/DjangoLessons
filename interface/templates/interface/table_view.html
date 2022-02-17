@@ -8,25 +8,41 @@
 
 {% block crumbs %}
     <br>
+{#    <div class="container">#}
+{#        <nav aria-label="breadcrumb">#}
+{#                <ol class="breadcrumb"><li class="breadcrumb-item"><a href="/blocks">Разделы</a>#}
+{#                    {% comment %}<li class="breadcrumb-item active" aria-current="page">{% endcomment %}<a href="/table?block={{ r.id }}">{{ r.interface_name }}</a></li>#}
+{#                    {% for s in section %}#}
+{#                        <li class="breadcrumb-item active" aria-current="page"><a href="/blocks">{{ s.interface_name }}</a></li>#}
+{#                    {% endfor %}#}
+{#                    {% for ss in sub_section %}#}
+{#                        <li class="breadcrumb-item active" aria-current="page"><a href="/table?block={{ section_id }}">{{ ss.interface_name }}</a></li>#}
+{#                    {% endfor %}#}
+{#                </ol>#}
+{#        </nav>#}
+{#    </div>#}
     <div class="container">
-        <nav aria-label="breadcrumb">
-                <ol class="breadcrumb"><li class="breadcrumb-item"><a href="/blocks">Разделы</a>
-                    {% comment %}<li class="breadcrumb-item active" aria-current="page">{% endcomment %}<a href="/table?block={{ r.id }}">{{ r.interface_name }}</a></li>
-                    {% for s in section %}
-                        <li class="breadcrumb-item active" aria-current="page"><a href="/blocks">{{ s.interface_name }}</a></li>
+        <div class="row">
+            <div class="col">
+                <h5><a href="/blocks" style="font-size: 16pt;">Разделы</a>
+                <span style="font-size: 20pt;">→</span>
+                {% for s in section %}
+                    <a style="font-size: 16pt;" href="/blocks">{{ s.interface_name }}</a>
                     {% endfor %}
-                    {% for ss in sub_section %}
-                        <li class="breadcrumb-item active" aria-current="page"><a href="/table?block={{ section_id }}">{{ ss.interface_name }}</a></li>
-                    {% endfor %}
-                </ol>
-        </nav>
+                <span style="font-size: 20pt;">→</span>
+                    {% for ss in sub_section %}<a style="font-size: 16pt;" href="/table?block={{ section_id }}">{{ ss.interface_name }}</a></h5>
+                {% endfor %}
+            </div>
+        </div>
     </div>
+
 {% endblock %}
 
 
 
 {% block main_content %}
-    {{ sql }}
+
+    <br>
     <br>
     <br>
     <div class="container">
@@ -34,7 +50,7 @@
             <div class="col-3" style="display: flex">
                 <div class="bg-light" style="border-radius: 10px;">
                     <div style="margin: 10px 10px 10px 10px;">
-                        <h5>Массовый импорт записей в таблицу: <a href="/excel?{{ url1 }}&template=1">(скачать шаблон)</a></h5>
+                        <h5>Массовый импорт записей в таблицу: </h5>
                         <form enctype="multipart/form-data" action="/table_view?section={{ section_id }}&sub_section={{ sub_section_id }}" method="POST" class="form-row" style="width: 120px;">
                             {#        Токен для проверки формы - требования джанго        #}
                             {% csrf_token %}
@@ -45,7 +61,6 @@
                     </div>
                 </div>
             </div>
-
 
 
             <div class="col-9">
@@ -69,7 +84,7 @@
 {#                    </form>#}
 {#                    <br><p style="margin-top: 5px; color: red">(Возможна длительная загрузка страницы)</p>#}
             <!-- Модальное окно -->
-            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade" data-backdrop="static"  id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog">
                 <div class="modal-content">
                   <div class="modal-header">
@@ -93,6 +108,53 @@
                   <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
                     <button type="submit" class="btn btn-outline-warning">Сохранить запись</button>
+                  </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            </div>
+            {% comment %}Модальное окно подсказки для фильтров{% endcomment %}
+                    <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel"><b>Как пользоваться фильтром?</b></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                  </div>
+                  <div class="modal-body">
+                      <div class="container">
+                          <div class="row">
+                              <div class="col">
+                                  Количественный фильтр позволяет фильтровать целочисленные данные. Для отбора данных используйте следующие комбинации ввода (N - нужное число):
+                              </div>
+                          </div>
+                          <div class="row">
+                              <div class="col">1. Отобрать все значения до N включительно <b>(-N)</b></div>
+                          </div>
+                          <br>
+                          <div class="row">
+                              <div class="col">2. Отобрать все значения от N включительно до M включительно <b>(N-M)</b></div>
+                          </div>
+                          <br>
+                          <div class="row">
+                              <div class="col">3. Отобрать все значения от N включительно (будет взят максимум по столбцу)<b>(N-)</b></div>
+                          </div>
+                          <br>
+                          <div class="row">
+                              <div class="col"><b>Примечание 1:</b> Для срабатывания фильтра кликните мышкой вне формы.
+                                  Страница будет перезагружена и будут выведены отфильтрованные данные</div>
+                          </div>
+                          <div class="row">
+                              <div class="col"><b>Примечание 2:</b> При использовании фильтра по нескольким полям одновременно, стоит учесть что фильтры срабатывают по принципу "И". То есть, будет учтено как первое заданное условие, так и второе</div>
+                          </div>
+
+                          <br>
+
+
+                      </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
                   </form>
                   </div>
                 </div>
@@ -147,8 +209,13 @@
                             <label class="form-label" for="selector" style="margin-top: 5px;">{{ counts.0 }}</label>
                         </div>
                         <div class="col-3">
-                            <input type="text" id="{{ counts.1 }}_id" class="form-control" value="{{ counts.2 }}" onfocusout='if (document.getElementById(`{{ counts.1 }}_id`).value == ``) {
-                            exit();}; window.location.href=`{{ url }}&{{ counts.1 }}__range=${document.getElementById(`{{ counts.1 }}_id`).value}`'>
+                            <div class="row">
+                                <div class="col-10"><input type="text" id="{{ counts.1 }}_id" class="form-control" value="{{ counts.2 }}" onfocusout='if (document.getElementById(`{{ counts.1 }}_id`).value == ``) {
+                            exit();}; window.location.href=`{{ url }}&{{ counts.1 }}__range=${document.getElementById(`{{ counts.1 }}_id`).value}`'></div>
+                                <div class="col-2"><a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal1"><img style="width: 25px; height: 25px; margin-top: 7px; margin-left: -20px;" src="https://img.icons8.com/dotty/80/000000/question-mark.png"/></a>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                     <br>
