@@ -18,6 +18,7 @@ urlpatterns = [
     path('delete', views.delete),
     path('edit', views.edit),
     path('access', views.access),
-    path('sync', views.sync_access)
+    path('sync', views.sync_access),
+    path('countries', views.countries)
 ]
 

@@ -261,19 +261,39 @@ TEMPLATES = [
 WSGI_APPLICATION = 'djangoProject1.wsgi.application'
 
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATIC_URL = '/static/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_URL = '/media/'
+
+
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
+    # Локалка
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sql_lessons',
+        'NAME': 'django',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': '',
         'HOST': 'localhost',
-    }
+    },
+    # Прод
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'monit2022',
+    #     'USER': 'ADMIN',
+    #     'PASSWORD': 'big#psKT',
+    #     'HOST': 'bsu-do-sql-pegas.bsu.edu.ru',
+        # 'HOST': '172.16.2.21',
+
+
+
 }
 
+CSRF_TRUSTED_ORIGINS = ['http://172.32.3.6/', 'https://world-activity.bsu.edu.ru']
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

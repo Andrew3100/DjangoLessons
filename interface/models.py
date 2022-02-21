@@ -361,9 +361,10 @@ class TableZaoch(models.Model):
 class RefCountry(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)
     fullname = models.CharField(max_length=255, blank=True, null=True)
+    include = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'ref_country'
 
 

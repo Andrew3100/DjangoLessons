@@ -262,6 +262,35 @@ def header(request):
         'username': request.user.first_name,
     })
 
+
+def countries(request):
+    try:
+        username = request.user.first_name
+    except AttributeError:
+        username = None
+        return render(request, 'interface/header/redirect.html')
+    dict = {}
+
+    dict['countries'] = RefCountry.objects.all()
+    current = request.get_full_path_info()
+    if is_get_param_in_this_url(current,'delete'):
+        RefCountry.objects.filter(id=int(request.GET['delete'])).update(include=0)
+        return render(request, 'interface/header/redirect_country.html')
+    if is_get_param_in_this_url(current,'revert'):
+        RefCountry.objects.filter(id=int(request.GET['revert'])).update(include=1)
+        return render(request, 'interface/header/redirect_country.html')
+    if is_get_param_in_this_url(request.get_full_path_info(),'submit'):
+    # if request.POST['name'] in globals():
+        d_post = {}
+        d_post['name']     = request.POST['name']
+        d_post['fullname'] = request.POST['fullname']
+        d_post['include'] = 1
+        RefCountry(**d_post).save()
+        return render(request, 'interface/header/redirect_country.html')
+    dict['username'] = request.user.first_name
+    return render(request, 'interface/countries.html', dict)
+
+
 def blocks(request):
     try:
         username = request.user.first_name
@@ -587,7 +616,7 @@ def add(request):
     posts_names_dict['is_delete'] = 0;
     # Формируем имя создаваемого экземпляра
     class_name = get_class_name_by_section_subsection(sub_section)
-    # Аргумент с двумя звёздочками - распаковка словаря обрабатываесых данных
+    # Аргумент с двумя звёздочками - распаковка словаря обрабатываемых данных
     # За счёт него можно передавать сколько угодно значений, а не фиксированное количество
     save = get_model_name(class_name)(**posts_names_dict).save()
     log = insert_log('Вставка записи ', class_name,request,request.GET['section'],request.GET['sub_section'])
@@ -709,7 +738,7 @@ def get_dictionary(request, class_name):
     dict = {}
     diap = ''
     for i in range(0, len(l)):
-        if l[i] != 'section' and l[i] != 'sub_section':
+        if l[i] != 'section' and l[i] != 'sub_section' and l[i] != 'limit':
             if '__range' in l[i]:
                 diap = get_diap(request.GET[l[i]], l[i], class_name)
                 dict[l[i]] = diap
@@ -823,6 +852,7 @@ def table_view(request):
     except AttributeError:
         username = None
         return render(request, 'interface/header/redirect.html')
+
     # Достаём имя раздела по идентификатору, указанному в GET параметре
     section_id = request.GET['section']
     sub_section_id = request.GET['sub_section']
@@ -879,8 +909,13 @@ def table_view(request):
     dict = get_dictionary(request, class_name)
     dict['is_delete'] = 0
 
+    # Кол-во записей в модели
+    count = 150
     # Запрос к базе данных
-    table_data = get_model_name(class_name).objects.filter(**dict)
+    if is_get_param_in_this_url(current_url,'limit'):
+        count = get_model_name(class_name).objects.filter(is_delete=0).count()
+
+    table_data = get_model_name(class_name).objects.order_by('-id').filter(**dict)[:count]
     if len(table_data) == 0:
         count = 0
     else:
@@ -1026,7 +1061,7 @@ def upload_file(request, sub_section):
 
 
 def GetCountriesList(request):
-    countries = RefCountry.objects.all()
+    countries = RefCountry.objects.filter(include=1)
     list = []
     Dict = {}
     for countr in countries:

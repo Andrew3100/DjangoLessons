@@ -65,16 +65,6 @@
 
             <div class="col-9">
                 {% block modal %}
-            <!-- Кнопка модального окна -->
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                <span style="color: black;">Добавить запись</span>
-            </button>
-                    <br>
-                    <br>
-                    <button form="excel" class="btn btn-outline-primary text-center"><span style="color: black">Сохранить в Excel</span></button>
-                    <br>
-                    <br>
-                    <a class="btn btn-outline-secondary" href="table_view?section={{ section_id }}&sub_section={{ sub_section_id }}">Сбросить фильтры</a>
 
                     {#                    <form method="POST">#}
 {#                    <input type="hidden" value="">#}
@@ -328,6 +318,29 @@
             <h4>Выбрано записей: <b>{{ count1 }}</b></h4>
         </div>
     </div>
+    <div class="row">
+        <div class="col text-center">
+            <p>По умолчанию выводится не более 150 записей, чтобы загрузка страницы не была длительной</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <button form="excel" class="btn btn-outline-primary text-center"><span style="color: black">Сохранить в Excel</span></button>
+        </div>
+        <div class="col text-center">
+            <a class="btn btn-outline-danger" href="table_view?section={{ section_id }}&sub_section={{ sub_section_id }}&limit=no">Показать всю таблицу</a>
+        </div>
+        <div class="col text-center">
+            <a class="btn btn-outline-secondary" href="table_view?section={{ section_id }}&sub_section={{ sub_section_id }}">Сбросить фильтры</a>
+        </div>
+        <div class="col text-center">
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <span style="color: black;">Добавить запись</span>
+            </button
+        </div>
+
+    </div>
+
 </div>
         <table class="table table-hover table-striped table-light text-center">
 <form id="excel" method="POST" action="/excel?{{ url1 }}">
