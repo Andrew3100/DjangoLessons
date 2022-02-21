@@ -6,7 +6,7 @@
 {% block main_content %}
 <br>
 <br>
-    {{ values }}
+{#    {{ values }}#}
                 {% if post != 'success' %}
                 <form method="POST" style="width: 600px; margin: auto" action="/edit?section_id={{ section_id }}&subsection_id={{ sub_section_id }}&record_edit={{ record_delete_id }}&model={{ model }}&submitted=1">
                     {% csrf_token %}

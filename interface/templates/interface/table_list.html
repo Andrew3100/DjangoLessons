@@ -5,18 +5,21 @@
 {% endblock %}
 
 {% block crumbs %}
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h5><a href="/blocks" style="font-size: 16pt;">Разделы</a>
+                <span style="font-size: 20pt;">→</span>
+                {% for r in seс %}
+                    {% if r.id == url %}
+                                <a href="/table?block={{ r.id }}">{{ r.interface_name }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
     <br>
-    {% for r in seс %}
-        {% if r.id == url %}
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb"><li class="breadcrumb-item"><a href="/blocks">Разделы</a></li>
-                <li class="breadcrumb-item active" aria-current="page">
-                    <a href="/table?block={{ r.id }}">{{ r.interface_name }}</a>
-                </li>
-            </ol>
-        </nav>
-        {% endif %}
-    {% endfor %}
 {% endblock %}
 
 
