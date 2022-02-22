@@ -4,36 +4,34 @@
 
 
 {% block crumbs %}
-    {% if username == 'Администрация Губернатора' or username == 'Администратор информационной системы' %}
-
-    <form method="post" action="/countries?s=1&submit=1" style="width: 600px; margin: auto">
-    {% csrf_token %}
-        <label for="name" class="form-label">Наименование <span style="color: red">*</span></label>
-        <input id="name" name="name" type="text" class="form-control" required>
-        <label for="fullname" class="form-label">Альтернативное имя</label>
-        <input id="fullname" name="fullname" type="text" class="form-control">
-        <br>
-        <button class="btn btn-success" type="submit">Добавить страну</button>
-    </form>
+    {% if username == 'Администрация Губернатора' or username == 'Администратор информационной системы'  or username == 'Andre'%}
+        <form method="post" action="/countries?s=1&submit=1" style="width: 600px; margin: auto">
+        {% csrf_token %}
+            <label for="name" class="form-label"><b>Наименование </b><span style="color: red">*</span></label>
+            <input id="name" name="name" type="text" class="form-control" required>
+            <label for="fullname" class="form-label"><b>Альтернативное имя</b></label>
+            <input id="fullname" name="fullname" type="text" class="form-control">
+            <br>
+            <button class="btn btn-success" type="submit">Добавить страну</button>
+        </form>
     {% endif %}
 {% endblock %}
 
 {% block main_content %}
 
-
     <h4 style="text-align: center">В данной таблице приведён список стран, которые можно использовать при импорте</h4>
 
     <table style="margin-top: 20px;" class="table table-default table-hover table-striped text-center">
         <tr class="table-light">
-            <td>Страна</td>
-            <td>Альтернативное наименование</td>
-            {% if username == 'Администрация Губернатора' or username == 'Администратор информационной системы' %}
+            <td><b>Наименование </b></td>
+            <td><b>Альтернативное имя</b></td>
+            {% if username == 'Администрация Губернатора' or username == 'Администратор информационной системы'   or username == 'Andre'%}
             <td>Статус</td>
             {% endif %}
         </tr>
         {% for count in countries %}
             <tr>
-            {% if username == 'Администрация Губернатора' or username == 'Администратор информационной системы' %}
+            {% if username == 'Администрация Губернатора' or username == 'Администратор информационной системы'  or username == 'Andre' %}
             <td>{{ count.name }}</td>
             <td>{{ count.fullname }}</td>
             {% if count.include == 1 %}

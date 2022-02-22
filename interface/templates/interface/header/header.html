@@ -19,7 +19,7 @@
     <title>{% block tittle %}Мониторинг международной деятельности{% endblock %}</title>
 
   </head>
-  <body style="background-color: ">
+  <body style="background-color: paleturquoise">
     <br>
    <div class="container" style="width: 2000px;">
        <div class="row">
@@ -47,10 +47,13 @@
                 <nav class="nav justify-content-between">
                   <a class="p-2 link-secondary text-center btn btn-outline-primary" style="color: black" href="/blocks">Разделы</a>
                   <a class="p-2 link-secondary text-center btn btn-outline-primary" style="color: black" href="/countries">Страны</a>
+                    {% if username == 'Администрация Губернатора' or username == 'Администратор информационной системы' or username == 'Andre'%}
 {#                  <a class="p-2 link-secondary text-center" href="/analisys">Статистика</a>#}
                   <a class="p-2 link-secondary text-center btn btn-outline-primary" style="color: black" href="/events">События</a>
                   <a class="p-2 link-secondary text-center btn btn-outline-primary" style="color: black" href="/access?user_id=all">Права доступа</a>
                   <a class="p-2 link-secondary text-center btn btn-outline-primary" style="color: black" href="/reports">Настройки</a>
+                    {% endif %}
+
                 </nav>
             </div>
        </div>

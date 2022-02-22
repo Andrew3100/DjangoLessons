@@ -247,6 +247,16 @@ def get_dict_by_GET(request, list_GET):
                 filter_MySQL_field(request.GET[l[i]]))
     return list_GET
 
+# Принадлежит ли запись авторизованному пользователю
+def the_entry_is_owned_by_an_authorized_user(request,record_id,model):
+    record_data = model.objects.filter(id=int(record_id))
+    for r_d in record_data:
+        author = r_d.author
+    if request.user.first_name == author:
+        return True
+    else:
+        return False
+
 
 # Функция перехватывает ошибку авторизации
 
@@ -527,6 +537,7 @@ def reports(request):
 
     dict = {}
     dict['settings'] = InterfaceSettings.objects.all()
+    dict['username'] = request.user.first_name
     # Если нажата кнопка вкл / выкл настройку
     if is_get_param_in_this_url(request.get_full_path_info(),'setting_id'):
         if request.GET['action'] == 'off':
@@ -763,10 +774,15 @@ def delete(request):
 def edit(request):
     section_id = request.GET['section_id']
     sub_section_id = request.GET['subsection_id']
-    sub_section_id = request.GET['subsection_id']
-    record_delete_id = request.GET['record_edit']
+    if this_block_access_for_user(request, request.user.id, int(section_id)) == False or the_entry_is_owned_by_an_authorized_user(request,
+                                                                                                                                  request.GET['record_edit'].split('_')[0],
+                                                                                                                                  get_model_name(request.GET['model'])
+                                                                                                                                  ) == False:
+        return render(request, 'interface/access_error.html')
+
+    record_delete_id = request.GET['record_edit'].split('_')[0]
     current_url = request.get_full_path_info()
-    edit = get_model_name(request.GET['model']).objects.filter(id=int(record_delete_id[0]))
+    edit = get_model_name(request.GET['model']).objects.filter(id=int(record_delete_id))
     if is_get_param_in_this_url(current_url,'submitted') == False:
         table_structure = Subsections_data.objects.filter(section_id=section_id, subsection_id=sub_section_id)
         # двумерный массив данных
@@ -803,11 +819,12 @@ def edit(request):
             else:
                 dict[post] = request.POST[post]
 # dict[post1[0]] = post1[1]
-        delete = get_model_name(request.GET['model']).objects.filter(id=int(record_delete_id[0])).update(**dict)
+        delete = get_model_name(request.GET['model']).objects.filter(id=int(record_delete_id)).update(**dict)
         return render(request, 'interface/edit.html', {
             'section': section_id,
             'sub_section_id': sub_section_id,
-            'post': 'success'
+            'post': 'success',
+            'username': request.user.first_name,
         })
 
 

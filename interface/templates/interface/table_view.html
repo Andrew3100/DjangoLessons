@@ -313,6 +313,24 @@
 
     {% endif %}
 <div class="container">
+    <br>
+    <div class="row">
+        <div class="col text-center">
+            <button form="excel" class="btn btn-success text-center btn-lg"><span style="color: black">Сохранить в Excel</span></button>
+        </div>
+        <div class="col text-center">
+            <a class="btn btn-danger btn-lg" href="table_view?section={{ section_id }}&sub_section={{ sub_section_id }}&limit=no">Показать всю таблицу</a>
+        </div>
+        <div class="col text-center">
+            <a class="btn btn-secondary btn-lg" href="table_view?section={{ section_id }}&sub_section={{ sub_section_id }}">Сбросить фильтры</a>
+        </div>
+        <div class="col text-center">
+            <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <span style="color: black;">Добавить запись</span>
+            </button>
+        </div>
+    </div>
+    <br>
     <div class="row">
         <div class="col text-center">
             <h4>Выбрано записей: <b>{{ count1 }}</b></h4>
@@ -320,29 +338,11 @@
     </div>
     <div class="row">
         <div class="col text-center">
-            <p>По умолчанию выводится не более 150 записей, чтобы загрузка страницы не была длительной</p>
+            <p style="color: red">По умолчанию выводится не более 150 записей, чтобы загрузка страницы не была длительной. Ограничение снимается нажатием кнопки "Показать всю таблицу". Для применения фильтров предварительно снимите ограничение, а затем применяйте их</p>
         </div>
     </div>
-    <div class="row">
-        <div class="col text-center">
-            <button form="excel" class="btn btn-outline-primary text-center"><span style="color: black">Сохранить в Excel</span></button>
-        </div>
-        <div class="col text-center">
-            <a class="btn btn-outline-danger" href="table_view?section={{ section_id }}&sub_section={{ sub_section_id }}&limit=no">Показать всю таблицу</a>
-        </div>
-        <div class="col text-center">
-            <a class="btn btn-outline-secondary" href="table_view?section={{ section_id }}&sub_section={{ sub_section_id }}">Сбросить фильтры</a>
-        </div>
-        <div class="col text-center">
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                <span style="color: black;">Добавить запись</span>
-            </button>
-        </div>
-
-    </div>
-
 </div>
-        <table class="table table-hover table-striped table-light text-center">
+        <table class="table table-hover table-striped table-dark text-center" style="width: 1600px; margin-left: -150px;">
 <form id="excel" method="POST" action="/excel?{{ url1 }}">
 {% csrf_token %}
 
@@ -353,14 +353,14 @@
     <input type="hidden" name="ss" value="{{ sub_section_id }}">
     {% for structure in table_structure %}
         <td>
-        <label class="form-label" for="{{ structure.sql_field_name }}_id">{{ structure.html_descriptor }}</label>
+            <label class="form-label" for="{{ structure.sql_field_name }}_id"><b>{{ structure.html_descriptor }}</b></label>
         <input id="{{ structure.sql_field_name }}_id" type="checkbox" name="{{ structure.sql_field_name }}" class="checkbox" value="{{ structure.html_descriptor }}" checked>
         </td>
     {% endfor %}
 
     </form>
 
-    <td>Действия</td>
+            <td><b>Действия</b></td>
     </tr>
     {% for data1 in data %}
         <tr>
