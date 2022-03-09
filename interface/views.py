@@ -541,9 +541,9 @@ def reports(request):
     # Если нажата кнопка вкл / выкл настройку
     if is_get_param_in_this_url(request.get_full_path_info(),'setting_id'):
         if request.GET['action'] == 'off':
-            re_assign = InterfaceSettings.objects.filter(id=int(request.GET['setting_id'])).update(include=0)
+            dict['re_assign'] = InterfaceSettings.objects.filter(id=int(request.GET['setting_id'])).update(include=1)
         else:
-            re_assign = InterfaceSettings.objects.filter(id=int(request.GET['setting_id'])).update(include=1)
+            dict['re_assign'] = InterfaceSettings.objects.filter(id=int(request.GET['setting_id'])).update(include=0)
 
 
     return render(request, 'interface/reports.html', dict)
