@@ -210,7 +210,7 @@
                     </div>
                     <br>
                 </div>
-    {% endfor %}
+            {% endfor %}
         </div>
     </div>
 </div>
@@ -342,7 +342,7 @@
         </div>
     </div>
 </div>
-        <table class="table table-hover table-striped table-dark text-center" style="width: 1600px; margin-left: -150px;">
+        <table class="table table-hover table-bordered table-striped table-dark text-center" style="width: 1600px; margin-left: -150px;">
 <form id="excel" method="POST" action="/excel?{{ url1 }}">
 {% csrf_token %}
 
@@ -376,7 +376,7 @@
 {##}
 {#                        {% endif %}#}
                         {% comment %}Проверка авторства записи{% endcomment %}
-                        {% if 'auth' in data2 %}
+                        {% if 'auth' in data2 or is_super %}
 
                         <div class="row">
                             <div class="col"><a style="color: olive" href="/edit?section_id={{ section_id }}&subsection_id={{ sub_section_id }}&record_edit={{ data2 }}&model={{ model }}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16">

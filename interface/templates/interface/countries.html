@@ -4,7 +4,7 @@
 
 
 {% block crumbs %}
-    {% if username == 'Администрация Губернатора' or username == 'Администратор информационной системы'  or username == 'Andre'%}
+    {% if username == 'Министерство цифрового развития Белгородской области' or username == 'Администратор информационной системы'  or username == 'Andre'%}
         <form method="post" action="/countries?s=1&submit=1" style="width: 600px; margin: auto">
         {% csrf_token %}
             <label for="name" class="form-label"><b>Наименование </b><span style="color: red">*</span></label>
@@ -25,13 +25,13 @@
         <tr class="table-light">
             <td><b>Наименование </b></td>
             <td><b>Альтернативное имя</b></td>
-            {% if username == 'Администрация Губернатора' or username == 'Администратор информационной системы'   or username == 'Andre'%}
+            {% if username == 'Министерство цифрового развития Белгородской области' or username == 'Администратор информационной системы'   or username == 'Andre'%}
             <td>Статус</td>
             {% endif %}
         </tr>
         {% for count in countries %}
             <tr>
-            {% if username == 'Администрация Губернатора' or username == 'Администратор информационной системы'  or username == 'Andre' %}
+            {% if username == 'Министерство цифрового развития Белгородской области' or username == 'Администратор информационной системы'  or username == 'Andre' %}
             <td>{{ count.name }}</td>
             <td>{{ count.fullname }}</td>
             {% if count.include == 1 %}

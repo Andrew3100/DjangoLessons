@@ -16,7 +16,7 @@
         <br>
 
         <div class="row">
-            <table class="table table-bordered text-center table-success table-striped table-hover">
+            <table class="table table-bordered text-center table-dark table-striped table-hover">
                 <tr>
                 {% for foo in  headers %}
                     <td>
@@ -27,7 +27,9 @@
                 {% for data1 in data  %}
                     <tr>
                     {% for data2 in data1  %}
-                        <td>{{ data2 }}</td>
+                        {% if data1.0 != 'Администратор информационной системы' %}
+                            <td>{{ data2 }}</td>
+                        {% endif %}
                     {% endfor %}
                     </tr>
                 {% endfor %}

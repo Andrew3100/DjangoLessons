@@ -41,7 +41,7 @@ def get_table_name(subsection):
 def get_settings_status(id):
     settings = InterfaceSettings.objects.filter(id=int(id))
     for s in settings:
-        if s.include == 1:
+        if s.include == '1':
             return True
         else:
             return False
@@ -270,6 +270,7 @@ def header(request):
         return render(request, 'interface/header/redirect.html')
     return render(request, 'interface/header/header.html', {
         'username': request.user.first_name,
+        'is_super': request.user.is_superuser,
     })
 
 
@@ -541,9 +542,9 @@ def reports(request):
     # Если нажата кнопка вкл / выкл настройку
     if is_get_param_in_this_url(request.get_full_path_info(),'setting_id'):
         if request.GET['action'] == 'off':
-            dict['re_assign'] = InterfaceSettings.objects.filter(id=int(request.GET['setting_id'])).update(include=1)
-        else:
             dict['re_assign'] = InterfaceSettings.objects.filter(id=int(request.GET['setting_id'])).update(include=0)
+        else:
+            dict['re_assign'] = InterfaceSettings.objects.filter(id=int(request.GET['setting_id'])).update(include=1)
 
 
     return render(request, 'interface/reports.html', dict)
@@ -622,7 +623,7 @@ def add(request):
             else:
                 posts_names_dict[table_structure1.sql_field_name] = request.POST[table_structure1.sql_field_name]
 
-    posts_names_dict['year_load'] = 2020;
+    posts_names_dict['year_load'] = 2022;
     posts_names_dict['author'] = request.user.first_name;
     posts_names_dict['is_delete'] = 0;
     # Формируем имя создаваемого экземпляра
@@ -996,6 +997,7 @@ def table_view(request):
         'filters_dates1': filters[2],
         'model': class_name,
         'username': current_user.first_name,
+        'is_super': current_user.is_superuser,
         'date1_value': dates1,
         'date2_value': dates2,
         # Метка для вывода диапазона дат
@@ -1033,7 +1035,8 @@ def upload_file(request, sub_section):
 
         lens = GetCountriesList(request)
         check_country = 0
-        if get_settings_status(1):
+        set_result = get_settings_status(1)
+        if get_settings_status(1) == True:
             check_country = 1
         # Массив словарей для записи
         array_dicts = []
@@ -1071,7 +1074,7 @@ def upload_file(request, sub_section):
         for dict in array_dicts:
             # Вставка словаря при помощи распаковки словаря аргументов **kwargs. Документация
             model(**dict).save()
-        log = "Импорт записей произведён успешно"
+        log = "Импорт записей произведён успешно "
         insert_log('Успешный импорт', get_class_name_by_section_subsection(sub_section), request, section_id,
                    sub_section_id)
         return log
